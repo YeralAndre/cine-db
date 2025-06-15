@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+
+@theme {
+  --font-inter: 'Inter', sans-serif;
+}
+
+body {
+    @apply bg-gray-950 text-gray-100 font-inter;
+}
+
+.font-inter-light {
+  font-family: "Inter", sans-serif;
+  font-weight: 300;
+}
+
+.font-inter-regular {
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+}
+
+.font-inter-medium {
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+}
+
+.font-inter-semibold {
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+}
+
+.font-inter-bold {
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+}
+
+.font-inter-extrabold {
+  font-family: "Inter", sans-serif;
+  font-weight: 800;
+}
+
+.font-inter-black {
+  font-family: "Inter", sans-serif;
+  font-weight: 900;
+}
+
+.font-inter-light-italic {
+  font-family: "Inter", sans-serif;
+  font-weight: 300;
+  font-style: italic;
+}
+
+.font-inter-regular-italic {
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.font-inter-medium-italic {
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.font-inter-semibold-italic {
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-style: italic;
+}
+
+.font-inter-bold-italic {
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+  font-style: italic;
+}
+
+.font-inter-extrabold-italic {
+  font-family: "Inter", sans-serif;
+  font-weight: 800;
+  font-style: italic;
+}
+
+.font-inter-black-italic {
+  font-family: "Inter", sans-serif;
+  font-weight: 900;
+  font-style: italic;
+}
