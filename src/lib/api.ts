@@ -68,7 +68,8 @@ async function searchMovies(url: string): Promise<APIInterfaces.QueryMovie[]> {
     .each((_, element) => {
       const data: APIInterfaces.QueryMovie = {};
       data["poster"] =
-        $(element).find(".ipc-media img").attr("src") || undefined;
+        $(element).find(".ipc-media img").attr("src")?.split("@")[0] + ".jpg" ||
+        undefined;
       const children = $(element).find(".ipc-metadata-list-summary-item__c");
       data["id"] = children.find("a").attr("href")?.split("/")[3] || undefined;
       data["title"] = children.find("a").text().trim();
@@ -92,98 +93,7 @@ async function searchMovies(url: string): Promise<APIInterfaces.QueryMovie[]> {
 
   return movies;
 }
-/*
-async function infoMovieV1(url: string): Promise<APIInterfaces.InfoMovie> {
-  const html = await fetchHtml(url);
-  const $ = cheerio.load(html);
-  const data: APIInterfaces.InfoMovie = {};
 
-  const element = $("[data-testid='hero-parent']");
-  data["id"] = url.split("/")[5] || undefined;
-  data["title"] = element.find(".hero__primary-text").text().trim();
-  data["originalTitle"] =
-    element.find(".sc-cb6a22b2-1").text().trim().split(": ")[1] || "";
-  const metadata = element
-    .find(".sc-cb6a22b2-2")
-    .find("li")
-    .map((_, li) => $(li).text().trim())
-    .get();
-  data["year"] = metadata[0] || "";
-  data["category"] = metadata[1] || "";
-  data["duration"] = metadata[2] || "";
-
-  const ratingElement = element.find(".sc-8e956c5c-0").find(".sc-8e956c5c-1");
-  data["rating"] =
-    ratingElement.find(".sc-4dc495c1-0").find("div").first().text().trim() ||
-    "";
-  data["peopleRating"] =
-    ratingElement.find(".sc-4dc495c1-0").find("div").last().text().trim() || "";
-
-  const popularityElement = ratingElement.last().find(".sc-9d3bc82f-3");
-  data["popularity"] = {
-    top: popularityElement.find(".sc-c5358bb8-1").text().trim() || "",
-    status: {
-      info: popularityElement
-        .find("[data-testid^='hero-rating-bar__popularity__']")
-        .attr("data-testid")
-        ?.endsWith("up")
-        ? "up"
-        : "down",
-      number: popularityElement.find(".sc-c5358bb8-2").text().trim() || "0",
-    },
-  };
-
-  data["poster"] =
-    element
-      .find(".sc-42c2285c-5")
-      .find("img")
-      .attr("srcset")
-      ?.split(" ")
-      .reverse()
-      .slice(1)
-      .shift() || "";
-
-  const descElement = element.find(".sc-42c2285c-10");
-  data["tags"] = descElement
-    .find(".ipc-chip-list__scroller")
-    .find("a")
-    .map((_, a) => $(a).text().trim())
-    .get();
-  data["synopsis"] = descElement.find("p").find(".sc-e32edc92-2").text().trim();
-  data["trailer"] =
-    "https://www.imdb.com" +
-      $("[data-testid='videos-slate-overlay-1']").attr("href") || "";
-
-  element
-    .find(".sc-42c2285c-10")
-    .find(".ipc-metadata-list")
-    .find("[data-testid='title-pc-principal-credit']")
-    .map((_, li) => {
-      switch (_) {
-        case 0:
-          data["direction"] = $(li).find("div").text().trim();
-          break;
-        case 1:
-          data["writers"] = $(li)
-            .find("div")
-            .find("ul")
-            .find("li")
-            .map((_, li) => $(li).text().trim())
-            .get();
-          break;
-        case 2:
-          data["actors"] = $(li)
-            .find("div")
-            .find("ul")
-            .find("li")
-            .map((_, li) => $(li).text().trim())
-            .get();
-          break;
-      }
-    });
-  return data;
-}
-*/
 async function infoMovie(url: string): Promise<APIInterfaces.InfoMovie> {
   const html = await fetchHtml(url);
   const $ = cheerio.load(html);
