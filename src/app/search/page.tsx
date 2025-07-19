@@ -56,7 +56,7 @@ export default function SearchPage() {
         <Search className="w-16 h-16 text-gray-400 mt-8 animate-pulse" />
         <p className="text-gray-400 text-lg font-light text-center max-w-2xl mt-8">
           Ingrese una película para comenzar la búsqueda. <br />
-          Por ejemplo: "Inception", "The Matrix", etc.
+          Por ejemplo: &quot;Inception&quot;, &quot;The Matrix&quot;, etc.
         </p>
       </>
     );

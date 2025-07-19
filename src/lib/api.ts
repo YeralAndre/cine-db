@@ -198,7 +198,11 @@ async function infoMovie(url: string): Promise<APIInterfaces.InfoMovie> {
     category: Array.isArray(json.genre)
       ? json.genre.join(", ")
       : json.genre || "",
-    duration: json.duration?.replaceAll("PT", "").replaceAll("M", "min").replaceAll("H", "h ") || "",
+    duration:
+      json.duration
+        ?.replaceAll("PT", "")
+        .replaceAll("M", "min")
+        .replaceAll("H", "h ") || "",
     rating: json.aggregateRating?.ratingValue?.toString() || "",
     peopleRating: json.aggregateRating?.ratingCount?.toString() || "",
     poster: json.image || "",
@@ -206,12 +210,12 @@ async function infoMovie(url: string): Promise<APIInterfaces.InfoMovie> {
     synopsis: json.description || "",
     trailer: json.trailer?.embedUrl || "",
     direction: Array.isArray(json.director)
-      ? json.director.map((d: any) => d.name).join(", ")
+      ? json.director.map((d: { name: string }) => d.name).join(", ")
       : json.director?.name || "",
     writers: (json.creator || [])
-      .filter((c: any) => c["@type"] === "Person")
-      .map((w: any) => w.name),
-    actors: (json.actor || []).map((a: any) => a.name),
+      .filter((c: { "@type": string }) => c["@type"] === "Person")
+      .map((w: { name: string }) => w.name),
+    actors: (json.actor || []).map((a: { name: string }) => a.name),
   };
 
   return data;
@@ -253,13 +257,4 @@ export default async function api(
     console.error("Error fetching data from API:", error);
     throw error;
   }
-}
-
-
-function normalizeDuration(input: string): string {
-  const match = input.match(/(\d+)\s*h\s*(\d+)/i) || input.match(/(\d+)[hH]\s*(\d+)[mM]?/);
-  if (!match) return input;
-  const hours = parseInt(match[1]);
-  const minutes = parseInt(match[2]);
-  return `${hours}h ${minutes}m`;
 }

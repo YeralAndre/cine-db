@@ -1,7 +1,6 @@
 "use client";
 
 import Loading from "@/components/Loading";
-import Navbar from "@/components/Navbar";
 import TopCard from "@/components/TopCard";
 import fetchAPI from "@/lib/fetchAPI";
 import { TopMovie } from "@/types/movies";

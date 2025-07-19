@@ -6,6 +6,7 @@ import fetchAPI from "@/lib/fetchAPI";
 import placeholder from "@/assets/placeholder.svg";
 import { Calendar, Clock, Star } from "lucide-react";
 import Loading from "@/components/Loading";
+import Image from "next/image";
 
 export default function InfoPage({
   params,
@@ -34,10 +35,12 @@ export default function InfoPage({
   return (
     <div className="p-4 my-10 flex flex-col items-center gap-4 w-full mx-auto">
       <div className="flex flex-row gap-10 w-1/2 mx-auto mb-5">
-        <img
+        <Image
           src={movie.poster ? movie.poster : placeholder}
           alt={`${movie.title} poster`}
-          className="h-[400px] object-cover rounded-lg"
+          className="object-cover rounded-lg"
+          height={400}
+          width={300}
         />
         <div className="flex flex-col gap-2">
           <h1 className="text-5xl font-semibold text-amber-400">

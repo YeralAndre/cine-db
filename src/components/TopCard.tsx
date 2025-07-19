@@ -1,4 +1,5 @@
 import { ArrowDown, ArrowUp, Calendar, Clock, Minus, Star } from "lucide-react";
+import Image from "next/image";
 import type { JSX } from "react";
 
 export default function TopCard({
@@ -54,10 +55,12 @@ export default function TopCard({
           {status?.info !== "none" && status?.number}
         </div>
       </div>
-      <img
-        src={poster}
+      <Image
+        src={poster ? poster : "/placeholder.svg"}
         alt={`${title} poster`}
-        className="w-24 h-36 object-cover rounded-l-lg"
+        className="object-cover rounded-l-lg"
+        width={96}
+        height={144}
       />
       <div className="flex flex-col justify-between p-4 w-full">
         <div className="flex flex-row items-center justify-between w-full">
