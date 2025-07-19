@@ -67,9 +67,9 @@ async function searchMovies(url: string): Promise<APIInterfaces.QueryMovie[]> {
     .children(".ipc-metadata-list-summary-item")
     .each((_, element) => {
       const data: APIInterfaces.QueryMovie = {};
-      data["poster"] =
-        $(element).find(".ipc-media img").attr("src")?.split("@")[0] + ".jpg" ||
-        undefined;
+      data["poster"] = $(element).find(".ipc-media img").attr("src")
+        ? $(element).find(".ipc-media img").attr("src")?.split("@._")[0] + "@.jpg"
+        : undefined;
       const children = $(element).find(".ipc-metadata-list-summary-item__c");
       data["id"] = children.find("a").attr("href")?.split("/")[3] || undefined;
       data["title"] = children.find("a").text().trim();
@@ -89,6 +89,7 @@ async function searchMovies(url: string): Promise<APIInterfaces.QueryMovie[]> {
         data["authors"] = [];
       }
       movies.push(data);
+      console.log(data.poster);
     });
 
   return movies;
