@@ -1,1 +1,39 @@
 @import "tailwindcss";
+
+@layer utilities {
+  .text-gradient,
+  .group:hover .group-hover\:text-gradient {
+    background: linear-gradient(to right, rgb(251 191 36), rgb(217 119 6));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .bg-gradient {
+    background: linear-gradient(to right, rgb(251 191 36), rgb(217 119 6));
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgb(75 85 99); /* gray-600 */
+    border-radius: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgb(107 114 128); /* gray-500 */
+  }
+
+  /* Para Firefox */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(75 85 99) transparent;
+  }
+}

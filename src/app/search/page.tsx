@@ -26,7 +26,7 @@ export default function SearchPage() {
       .then(
         (
           response:
-            | APIInterfaces.TopMovie[]
+            | APIInterfaces.Movie[]
             | APIInterfaces.QueryMovie[]
             | APIInterfaces.InfoMovie
         ) => {
@@ -116,7 +116,7 @@ export default function SearchPage() {
   }, [searchQuery]);
 
   return (
-    <section className="flex flex-col items-center w-full h-screen gap-4 py-4 mt-8">
+    <section className="flex flex-col items-center w-full h-screen gap-4 py-4 mt-24">
       <div className="flex flex-col items-center w-full" id="start">
         <h1 className="text-amber-400 font-semibold text-5xl my-4">
           Buscar Películas

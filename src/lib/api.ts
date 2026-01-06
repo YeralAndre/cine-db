@@ -1,5 +1,31 @@
 import * as APIInterfaces from "@/types/movies";
 
+const genreMap: {
+  [key: number]: string;
+} = {
+  28: "Acción",
+  12: "Aventura",
+  16: "Animación",
+  35: "Comedia",
+  80: "Crimen",
+  99: "Documental",
+  18: "Drama",
+  10751: "Familia",
+  14: "Fantasía",
+  36: "Historia",
+  27: "Terror",
+  10402: "Música",
+  9648: "Misterio",
+  10749: "Romance",
+  878: "Ciencia ficción",
+  10770: "Película de TV",
+  53: "Suspenso",
+  10752: "Bélica",
+  37: "Western",
+};
+
+// Ejemplo: genre_ids [878, 12, 14] → "Ciencia ficción, Aventura, Fantasía"
+
 // ============================================
 // TMDB API CONFIGURATION
 // ============================================
@@ -45,7 +71,9 @@ function formatRuntime(minutes: number | null): string {
  */
 async function fetchTMDB(endpoint: string): Promise<any> {
   if (!TMDB_API_KEY) {
-    throw new Error("TMDB_API_KEY no está configurada en las variables de entorno");
+    throw new Error(
+      "TMDB_API_KEY no está configurada en las variables de entorno"
+    );
   }
 
   const url = `${TMDB_BASE_URL}${endpoint}`;
@@ -69,22 +97,119 @@ async function fetchTMDB(endpoint: string): Promise<any> {
 
 /**
  * Obtiene las películas populares de TMDB
- * Mapea a la interfaz TopMovie
+ * Mapea a la interfaz Movie
  */
-async function topMovies(): Promise<APIInterfaces.TopMovie[]> {
+async function topMovies(): Promise<APIInterfaces.Movie[]> {
   const data = await fetchTMDB("/movie/popular?language=es-ES&page=1");
-  const movies: APIInterfaces.TopMovie[] = [];
+  const movies: APIInterfaces.Movie[] = [];
 
   data.results.forEach((movie: any, index: number) => {
-    const topMovie: APIInterfaces.TopMovie = {
+    const movieData: APIInterfaces.Movie = {
       id: movie.id?.toString(),
       poster: buildPosterUrl(movie.poster_path),
       top: (index + 1).toString(), // Ranking basado en posición
       title: movie.title,
       year: movie.release_date?.split("-")[0] || "",
       rating: movie.vote_average?.toFixed(1) || "",
+      genres: movie.genre_ids
+        ?.map((id: number) => genreMap[id])
+        .filter((name: string | undefined) => name !== undefined) as string[],
+      overview: movie.overview || "",
+      adult: movie.adult || false,
     };
-    movies.push(topMovie);
+    movies.push(movieData);
+  });
+
+  return movies;
+}
+
+/**
+ * Descubre películas por género
+ * Mapea a la interfaz Movie (mismo formato que popular)
+ */
+async function discoverMovies(params: {
+  with_genres: string;
+  sort_by?: string;
+  language?: string;
+}): Promise<APIInterfaces.Movie[]> {
+  const sortBy = params.sort_by || "popularity.desc";
+  const language = params.language || "es-ES";
+  const data = await fetchTMDB(
+    `/discover/movie?with_genres=${params.with_genres}&sort_by=${sortBy}&language=${language}&page=1`
+  );
+  const movies: APIInterfaces.Movie[] = [];
+
+  data.results.forEach((movie: any, index: number) => {
+    const movieData: APIInterfaces.Movie = {
+      id: movie.id?.toString(),
+      poster: buildPosterUrl(movie.poster_path),
+      top: (index + 1).toString(),
+      title: movie.title,
+      year: movie.release_date?.split("-")[0] || "",
+      rating: movie.vote_average?.toFixed(1) || "",
+      genres: movie.genre_ids
+        ?.map((id: number) => genreMap[id])
+        .filter((name: string | undefined) => name !== undefined) as string[],
+      overview: movie.overview || "",
+      adult: movie.adult || false,
+    };
+    movies.push(movieData);
+  });
+
+  return movies;
+}
+
+/**
+ * Obtiene películas recomendadas basadas en una película
+ * Mapea a la interfaz Movie
+ */
+async function recommendedMovies(movieId: string): Promise<APIInterfaces.Movie[]> {
+  const data = await fetchTMDB(`/movie/${movieId}/recommendations?language=es-ES&page=1`);
+  const movies: APIInterfaces.Movie[] = [];
+
+  data.results.forEach((movie: any, index: number) => {
+    const movieData: APIInterfaces.Movie = {
+      id: movie.id?.toString(),
+      poster: buildPosterUrl(movie.poster_path),
+      top: (index + 1).toString(),
+      title: movie.title,
+      year: movie.release_date?.split("-")[0] || "",
+      rating: movie.vote_average?.toFixed(1) || "",
+      genres: movie.genre_ids
+        ?.map((id: number) => genreMap[id])
+        .filter((name: string | undefined) => name !== undefined) as string[],
+      overview: movie.overview || "",
+      adult: movie.adult || false,
+    };
+    movies.push(movieData);
+  });
+
+  return movies;
+}
+
+/**
+ * Obtiene películas similares basadas en una película
+ * Mapea a la interfaz Movie
+ */
+async function similarMovies(movieId: string): Promise<APIInterfaces.Movie[]> {
+  const data = await fetchTMDB(`/movie/${movieId}/similar?language=es-ES&page=1`);
+  const movies: APIInterfaces.Movie[] = [];
+
+  data.results.forEach((movie: any, index: number) => {
+    const movieData: APIInterfaces.Movie = {
+      id: movie.id?.toString(),
+      poster: buildPosterUrl(movie.poster_path),
+      top: (index + 1).toString(),
+      title: movie.title,
+      year: movie.release_date?.split("-")[0] || "",
+      rating: movie.vote_average?.toFixed(1) || "",
+      genres: movie.genre_ids
+        ?.map((id: number) => genreMap[id])
+        .filter((name: string | undefined) => name !== undefined) as string[],
+      overview: movie.overview || "",
+      adult: movie.adult || false,
+    };
+    movies.push(movieData);
   });
 
   return movies;
@@ -94,9 +219,13 @@ async function topMovies(): Promise<APIInterfaces.TopMovie[]> {
  * Busca películas por término de búsqueda
  * Mapea a la interfaz QueryMovie
  */
-async function searchMovies(query: string): Promise<APIInterfaces.QueryMovie[]> {
+async function searchMovies(
+  query: string
+): Promise<APIInterfaces.QueryMovie[]> {
   const encodedQuery = encodeURIComponent(query);
-  const data = await fetchTMDB(`/search/movie?query=${encodedQuery}&language=es-ES&page=1`);
+  const data = await fetchTMDB(
+    `/search/movie?query=${encodedQuery}&language=es-ES&page=1`
+  );
   const movies: APIInterfaces.QueryMovie[] = [];
 
   // Para obtener authors necesitaríamos llamar credits por cada película
@@ -191,16 +320,16 @@ async function infoMovie(movieId: string): Promise<APIInterfaces.InfoMovie> {
 /**
  * Función principal de la API
  * Mantiene la misma firma que la versión original con IMDB scraping
- * 
- * @param type - Tipo de consulta: "top" | "search" | "info"
- * @param query - Parámetro opcional: término de búsqueda o ID de película
+ *
+ * @param type - Tipo de consulta: "top" | "search" | "info" | "discover" | "recommendations" | "similar"
+ * @param query - Parámetro opcional: término de búsqueda, ID de película, o objeto con parámetros de discover
  * @returns Promise con array de películas o info de película individual
  */
 export default async function api(
-  type: "top" | "search" | "info",
-  query?: string
+  type: "top" | "search" | "info" | "discover" | "recommendations" | "similar",
+  query?: string | { with_genres: string; sort_by?: string; language?: string }
 ): Promise<
-  | APIInterfaces.TopMovie[]
+  | APIInterfaces.Movie[]
   | APIInterfaces.QueryMovie[]
   | APIInterfaces.InfoMovie
 > {
@@ -208,22 +337,40 @@ export default async function api(
     switch (type) {
       case "top":
         return await topMovies();
-      
+
       case "search":
-        if (!query) {
+        if (!query || typeof query !== "string") {
           throw new Error("Search query is required for 'search' type.");
         }
         return await searchMovies(query);
-      
+
       case "info":
-        if (!query) {
+        if (!query || typeof query !== "string") {
           throw new Error("Movie ID is required for 'info' type.");
         }
         return await infoMovie(query);
-      
+
+      case "discover":
+        if (!query || typeof query === "string") {
+          throw new Error("Discover params object is required for 'discover' type.");
+        }
+        return await discoverMovies(query);
+
+      case "recommendations":
+        if (!query || typeof query !== "string") {
+          throw new Error("Movie ID is required for 'recommendations' type.");
+        }
+        return await recommendedMovies(query);
+
+      case "similar":
+        if (!query || typeof query !== "string") {
+          throw new Error("Movie ID is required for 'similar' type.");
+        }
+        return await similarMovies(query);
+
       default:
         throw new Error(
-          "Invalid type provided. Use 'top', 'search', or 'info'."
+          "Invalid type provided. Use 'top', 'search', 'info', 'discover', 'recommendations', or 'similar'."
         );
     }
   } catch (error) {

@@ -1,8 +1,10 @@
 "use client";
 
 import { ArrowLeft, Search } from "lucide-react";
-import Link from "next/link";
+import Image from "next/image";
+import Logo from "@/assets/logo.png"
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 export default function Navbar() {
   const [isHomePage, setIsHomePage] = useState<boolean>(false);
@@ -14,9 +16,9 @@ export default function Navbar() {
 
   const SearchInput = () => {
     return (
-      <div className="bg-gray-900 px-4 py-2 flex flex-row items-center gap-2 rounded-lg text-gray-300 hover:bg-gray-800 transition-colors">
+      <div className="bg-gray-900 px-4 py-2 flex flex-row items-center gap-2 rounded-lg text-gray-300 hover:bg-gray-800 transition-colors cursor-text">
         <Search className="w-4 h-4" />
-        <a
+        <Link
           href={"/search"}
           className="pointer-none"
           onClick={() => setIsHomePage(false)}
@@ -27,7 +29,7 @@ export default function Navbar() {
             className="bg-transparent outline-none text-sm placeholder-gray-500"
             aria-label="Search"
           />
-        </a>
+        </Link>
       </div>
     );
   };
@@ -45,15 +47,18 @@ export default function Navbar() {
     );
   };
   return (
-    <nav className="w-full p-4">
-      <div className="container mx-auto flex justify-between items-center w-full">
-        <Link href={"/"} className="text-amber-400 text-lg font-bold">
-          CineDB
-        </Link>
-        <div className="flex flex-row items-center justify-between">
-          {isHomePage ? <SearchInput /> : <BackHome />}
+    <section className="fixed top-0 z-50 bg-gray-950/80 backdrop-blur-sm bg-opacity-95 w-full">
+      <nav className="w-full p-4">
+        <div className="container mx-auto flex justify-between items-center w-full">
+          <a href={"/"}>
+            <Image src={Logo} alt="logo" width={120} height={60}/>
+          </a>
+          <div className="flex flex-row items-center justify-between">
+            {isHomePage ? <SearchInput /> : <BackHome />}
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+      <div className="bg-gray-700 h-[0.5px] w-full" />
+    </section>
   );
 }

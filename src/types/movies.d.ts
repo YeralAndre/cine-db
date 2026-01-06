@@ -1,16 +1,13 @@
-export interface TopMovie {
+export interface Movie {
   id?: string;
   poster?: string;
   top?: string;
-  status?: {
-    info: "up" | "down";
-    number: string;
-  };
   title?: string;
   year?: string;
-  duration?: string;
-  category?: string;
   rating?: string;
+  genres?: string[];
+  overview?: string;
+  adult?: boolean;
 }
 
 export interface QueryMovie {

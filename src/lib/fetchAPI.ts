@@ -1,51 +1,80 @@
 import * as APIInterfaces from "@/types/movies";
 
+type FetchParams = Record<string, string | number | null | undefined>;
+
+function buildQueryString(params: FetchParams): string {
+  const entries = Object.entries(params)
+    .filter(([_, value]) => value != null) // Remover null/undefined
+    .map(([key, value]) => `${key}=${encodeURIComponent(String(value))}`);
+  return entries.length > 0 ? `?${entries.join("&")}` : "";
+}
+
 export default async function fetchAPI(
-  type: "top" | "search" | "info",
-  query?: string
+  type: "top" | "search" | "info" | "discover" | "recommendations" | "similar",
+  params?: string | FetchParams
 ): Promise<
-  | APIInterfaces.TopMovie[]
+  | APIInterfaces.Movie[]
   | APIInterfaces.QueryMovie[]
   | APIInterfaces.InfoMovie
 > {
   try {
     switch (type) {
-      case "top":
-        return (await fetch(`/api/movies/top`)).json() as Promise<
-          APIInterfaces.TopMovie[]
+      case "top": {
+        const queryString = typeof params === "object" ? buildQueryString(params) : "";
+        return (await fetch(`/api/movies/top${queryString}`)).json() as Promise<
+          APIInterfaces.Movie[]
         >;
-      case "search":
-        if (!query) {
+      }
+      case "discover": {
+        if (!params || typeof params === "string") {
+          throw new Error("Discover requires params object with genre filters.");
+        }
+        const queryString = buildQueryString(params);
+        return (await fetch(`/api/movies/discover${queryString}`)).json() as Promise<
+          APIInterfaces.Movie[]
+        >;
+      }
+      case "search": {
+        if (!params) {
           throw new Error("Search query is required for 'search' type.");
         }
-        return (
-          await fetch(`/api/movies/search?q=${encodeURIComponent(query)}`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          })
-        ).json() as Promise<APIInterfaces.TopMovie[]>;
-      case "info":
-        if (!query) {
+        const queryString = typeof params === "string" 
+          ? `?q=${encodeURIComponent(params)}`
+          : buildQueryString(params);
+        return (await fetch(`/api/movies/search${queryString}`)).json() as Promise<
+          APIInterfaces.QueryMovie[]
+        >;
+      }
+      case "info": {
+        if (!params) {
           throw new Error("Movie ID is required for 'info' type.");
         }
-        const res = await fetch(
-          `/api/movies/info?id=${encodeURIComponent(query)}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        if (!res.ok) {
-          throw `Error fetching movie info: ${res.statusText}`;
+        const queryString = typeof params === "string"
+          ? `?id=${encodeURIComponent(params)}`
+          : buildQueryString(params);
+        return (await fetch(`/api/movies/info${queryString}`)).json() as Promise<
+          APIInterfaces.InfoMovie
+        >;
+      }
+      case "recommendations": {
+        if (!params || typeof params !== "string") {
+          throw new Error("Movie ID is required for 'recommendations' type.");
         }
-        return (await res.json()) as Promise<APIInterfaces.InfoMovie>;
+        return (await fetch(`/api/movies/recommendations?id=${encodeURIComponent(params)}`)).json() as Promise<
+          APIInterfaces.Movie[]
+        >;
+      }
+      case "similar": {
+        if (!params || typeof params !== "string") {
+          throw new Error("Movie ID is required for 'similar' type.");
+        }
+        return (await fetch(`/api/movies/similar?id=${encodeURIComponent(params)}`)).json() as Promise<
+          APIInterfaces.Movie[]
+        >;
+      }
       default:
         throw new Error(
-          "Invalid type provided. Use 'top', 'search', or 'info'."
+          "Invalid type provided. Use 'top', 'search', 'info', 'discover', 'recommendations', or 'similar'."
         );
     }
   } catch (error) {
