@@ -1,188 +1,250 @@
 # 🎬 CineDB
 
-Una aplicación web moderna para explorar películas populares, buscar información detallada y descubrir nuevos títulos. CineDB utiliza datos de IMDB para proporcionar una experiencia completa de navegación cinematográfica.
+Una aplicación web moderna para explorar películas populares, buscar información detallada y descubrir nuevos títulos. CineDB utiliza la API de **The Movie Database (TMDB)** para proporcionar una experiencia completa de navegación cinematográfica con datos actualizados en tiempo real.
+
+> **🔄 Migración Completada:** Este proyecto ha sido migrado exitosamente de IMDB web scraping a TMDB API (Enero 2026).
 
 ## ✨ Características
 
-- **🏆 Top de Películas**: Visualiza las películas más populares del momento
-- **🔍 Búsqueda Inteligente**: Busca películas por título con resultados instantáneos
+- **🏆 Top 20 Películas Populares**: Visualiza las películas más populares del momento según TMDB
+- **🔍 Búsqueda Instantánea**: Busca películas por título con resultados en tiempo real
 - **📊 Información Detallada**: Accede a información completa incluyendo:
-  - Sinopsis y calificaciones
-  - Elenco y equipo de producción
+  - Sinopsis y calificaciones (TMDB ratings)
+  - Director, guionistas y elenco completo
   - Duración, año de lanzamiento y géneros
-  - Tráilers integrados
-- **📱 Diseño Responsivo**: Optimizado para dispositivos móviles y desktop
+  - **Tráilers de YouTube** integrados
+  - Número de votos de usuarios
+- **📱 Diseño Responsivo**: Optimizado para dispositivos móviles, tablets y desktop
 - **🎨 Interfaz Moderna**: Diseño oscuro con acentos en color ámbar
 - **⚡ Rendimiento Optimizado**: Construido con Next.js 15 y Turbopack
+- **🌐 Contenido en Español**: Datos traducidos automáticamente por TMDB
 
 ## 🛠️ Tecnologías Utilizadas
 
 ### Frontend
 - **Next.js 15.4.2** - Framework de React con App Router
 - **React 19.1.0** - Biblioteca de interfaz de usuario
-- **TypeScript** - Tipado estático para JavaScript
+- **TypeScript 5** - Tipado estático para JavaScript
 - **Tailwind CSS 4** - Framework de CSS utilitario
-- **Lucide React** - Iconos modernos
+- **Lucide React** - Iconos modernos y accesibles
 
 ### Backend & APIs
-- **Next.js API Routes** - Endpoints del servidor
-- **Cheerio** - Web scraping para extraer datos de IMDB
-- **IMDB Integration** - Datos en tiempo real de películas
+- **Next.js API Routes** - Server-side endpoints
+- **TMDB API (v3)** - The Movie Database API oficial
+- **Fetch API** - Peticiones HTTP nativas (sin librerías externas)
 
 ### Herramientas de Desarrollo
-- **ESLint** - Linting de código
-- **pnpm** - Gestor de paquetes rápido
+- **ESLint 9** - Linting de código
+- **pnpm 10.13.1** - Gestor de paquetes rápido y eficiente
 - **Turbopack** - Bundler de nueva generación
 
 ## 🚀 Instalación y Configuración
 
 ### Prerrequisitos
-- Node.js 18+ instalado
-- pnpm instalado globalmente
+- **Node.js 20+** instalado ([Descargar aquí](https://nodejs.org/))
+- **pnpm** instalado globalmente:
+  ```bash
+  npm install -g pnpm
+  ```
+- **Cuenta de TMDB** (gratuita) para obtener API Key
 
-### Pasos de Instalación
+---
 
-1. **Clonar el repositorio**
-   ```bash
-   git clone <repository-url>
-   cd movie-webpage
-   ```
+### 🔑 Paso 1: Obtener tu API Key de TMDB
 
-2. **Instalar dependencias**
-   ```bash
-   pnpm install
-   ```
+1. **Crear cuenta en TMDB** (si no tienes una)
+   - Ve a [https://www.themoviedb.org/signup](https://www.themoviedb.org/signup)
+   - Completa el registro (hazlo con un correo que no sea de Google para evitar un error 403)
 
-3. **Ejecutar en modo desarrollo**
-   ```bash
-   pnpm dev
-   ```
+2. **Solicitar API Access**
+   - Inicia sesión en TMDB
+   - Ve a tu perfil → **Settings** → **API**
+   - Haz clic en **"Create"** o **"Request an API Key"**
+   - Selecciona **"Developer"** (no comercial)
+   - Completa el formulario básico
+   - Acepta los términos de uso
 
-4. **Abrir en el navegador**
-   ```
-   http://localhost:3000
-   ```
+3. **Copiar el Read Access Token (v4)**
+   - Una vez aprobado, verás dos tokens
+   - **Importante:** Copia el **"API Read Access Token (v4 auth)"**
+   - Este es un token Bearer largo (empieza con `eyJ...`)
+   - **NO uses** el "API Key (v3 auth)"
+
+---
+
+### 📦 Paso 2: Clonar e Instalar
+
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/YeralAndre/cine-db.git
+cd cine-db
+
+# 2. Instalar dependencias
+pnpm install
+
+# 3. Crear archivo de variables de entorno
+cp .env.example .env.local
+```
+
+---
+
+### ⚙️ Paso 3: Configurar Variables de Entorno
+
+Abre el archivo `.env.local` y agrega tu API Key:
+
+```env
+# .env.local
+TMDB_API_KEY=tu_token_bearer_completo_aqui
+```
+
+> **⚠️ Importante:** NUNCA compartas tu API Key públicamente ni la subas a GitHub. El archivo `.env.local` ya está en `.gitignore`.
+
+---
+
+### 🏃 Paso 4: Ejecutar el Proyecto
+
+```bash
+# Modo desarrollo
+pnpm dev
+```
+
+Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
+
+---
+
+## 🔒 Seguridad
+
+- ✅ **API Key en servidor:** La clave TMDB solo se usa en API Routes (server-side)
+- ✅ **No se expone al cliente:** El código JavaScript del navegador nunca ve la API key
+- ✅ **Rate limiting:** TMDB permite 1,000,000 requests/mes en plan gratuito
+- ✅ **HTTPS:** Vercel proporciona SSL automático
 
 ## 📁 Estructura del Proyecto
 
 ```
-movie-webpage/
+cine-db/
 ├── src/
 │   ├── app/                    # App Router de Next.js
-│   │   ├── page.tsx           # Página principal (Top películas)
-│   │   ├── layout.tsx         # Layout principal
+│   │   ├── page.tsx           # Página principal (Top 20 películas)
+│   │   ├── layout.tsx         # Layout principal con Navbar
 │   │   ├── globals.css        # Estilos globales
-│   │   ├── api/               # API Routes
+│   │   ├── api/               # API Routes (Server-side)
 │   │   │   └── movies/        # Endpoints de películas
-│   │   │       ├── top/       # Top películas
-│   │   │       ├── search/    # Búsqueda
-│   │   │       └── info/      # Información detallada
+│   │   │       ├── top/       # GET /api/movies/top
+│   │   │       ├── search/    # GET /api/movies/search?q={query}
+│   │   │       └── info/      # GET /api/movies/info?id={movieId}
 │   │   ├── search/            # Página de búsqueda
-│   │   └── info/[id]/         # Página de detalles de película
+│   │   │   └── page.tsx       # /search
+│   │   └── info/[id]/         # Página de detalles
+│   │       └── page.tsx       # /info/{id}
 │   ├── components/            # Componentes reutilizables
 │   │   ├── Navbar.tsx         # Barra de navegación
 │   │   ├── TopCard.tsx        # Tarjeta de película popular
-│   │   ├── SearchResultCard.tsx # Tarjeta de resultado de búsqueda
-│   │   └── Loading.tsx        # Componente de carga
-│   ├── lib/                   # Utilidades y lógica de negocio
-│   │   ├── api.ts            # Cliente de web scraping de IMDB
+│   │   ├── SearchResultCard.tsx # (No usado - integrado en search/page.tsx)
+│   │   └── Loading.tsx        # Spinner de carga
+│   ├── lib/                   # Lógica de negocio
+│   │   ├── api.ts            # ⭐ Cliente TMDB API (core)
 │   │   └── fetchAPI.ts       # Cliente de API interno
-│   ├── types/                 # Definiciones de TypeScript
-│   │   └── movies.d.ts       # Interfaces de películas
+│   ├── types/                 # TypeScript Interfaces
+│   │   ├── movies.d.ts       # TopMovie, QueryMovie, InfoMovie
+│   │   └── images.d.ts       # Tipos para importar imágenes
 │   └── assets/               # Recursos estáticos
-├── public/                   # Archivos públicos
+│       ├── placeholder.png   # Imagen placeholder
+│       └── placeholder.svg   # SVG placeholder
+├── public/                   # Archivos públicos estáticos
+├── .env.example             # Plantilla de variables de entorno
 ├── package.json             # Dependencias y scripts
 ├── next.config.ts          # Configuración de Next.js
-├── tailwind.config.js      # Configuración de Tailwind
+├── postcss.config.mjs      # Configuración de PostCSS
 └── tsconfig.json          # Configuración de TypeScript
 ```
 
 ## 🔧 Scripts Disponibles
 
-- `pnpm dev` - Inicia el servidor de desarrollo con Turbopack
-- `pnpm build` - Construye la aplicación para producción
-- `pnpm start` - Inicia el servidor de producción
-- `pnpm lint` - Ejecuta ESLint para revisar el código
+```bash
+# Desarrollo con Turbopack (hot reload)
+pnpm dev
 
-## 🎯 Funcionalidades Principales
+# Build de producción
+pnpm build
 
-### 1. Página Principal - Top de Películas
-- Muestra las películas más populares de IMDB
-- Indicadores de tendencia (subiendo/bajando en popularidad)
-- Información básica: título, año, duración, calificación
-- Navegación directa a información detallada
+# Ejecutar build de producción
+pnpm start
 
-### 2. Búsqueda de Películas
-- Búsqueda en tiempo real por título
-- Resultados con pósters, años y equipo de producción
-- Interfaz de búsqueda intuitiva
-- Manejo de estados de carga y errores
+# Linting de código
+pnpm lint
+```
 
-### 3. Información Detallada
-- Vista completa de la película seleccionada
-- Sinopsis, calificaciones y metadatos
-- Información del elenco y equipo técnico
-- Integración de tráilers de IMDB
-- Etiquetas de géneros
-- Diseño responsive y atractivo
+## 🎯 API Endpoints
 
-### 4. Navegación
-- Barra de navegación adaptiva
-- Botón de regreso al inicio
-- Enlaces directos a búsqueda
-- Experiencia de usuario fluida
+### Endpoints Internos (Next.js API Routes)
+
+Estos endpoints son consumidos por el frontend:
+
+```
+GET /api/movies/top
+└── Retorna: TopMovie[]
+    └── Top 20 películas populares
+
+GET /api/movies/search?q={query}
+└── Retorna: QueryMovie[]
+    └── Resultados de búsqueda
+
+GET /api/movies/info?id={movieId}
+└── Retorna: InfoMovie
+    └── Información completa de película + trailer + créditos
+```
+
+### TMDB API (Backend)
+
+El archivo `src/lib/api.ts` consume estos endpoints de TMDB:
+
+```
+GET https://api.themoviedb.org/3/movie/popular
+└── Usado por: topMovies()
+
+GET https://api.themoviedb.org/3/search/movie?query={q}
+└── Usado por: searchMovies()
+
+GET https://api.themoviedb.org/3/movie/{id}?append_to_response=videos,credits
+└── Usado por: infoMovie()
+```
+
+---
 
 ## 🎨 Diseño y UX
 
 ### Paleta de Colores
-- **Primario**: Gris oscuro (`gray-950`)
-- **Acento**: Ámbar (`amber-400`, `amber-500`)
-- **Texto**: Blanco y grises (`gray-100`, `gray-400`)
-- **Tarjetas**: Gris medio (`gray-900`)
+- **Fondo Principal**: Gris oscuro (`gray-950`)
+- **Acento Primario**: Ámbar (`amber-400`, `amber-500`)
+- **Texto**: Blanco y grises (`gray-100`, `gray-300`, `gray-400`)
+- **Tarjetas**: Gris medio (`gray-800`, `gray-900`)
+- **Bordes**: Grises translúcidos
 
-### Características de Diseño
-- Tema oscuro moderno y elegante
-- Animaciones sutiles y transiciones suaves
-- Iconografía consistente con Lucide React
-- Tipografía clara con la fuente Inter
-- Hover effects y estados interactivos
+### Tipografía
+- Sistema de fuentes nativo (optimizado por Tailwind)
+- Tamaños adaptables según viewport
+- Weights: Normal (400), Medium (500), Semibold (600), Bold (700)
 
-## 🔌 API Endpoints
+### Interacciones
+- Hover states en tarjetas y botones
+- Transiciones suaves (200ms)
+- Loading spinners animados
+- Responsive grid adaptable
 
-### `/api/movies/top`
-- **Método**: GET
-- **Descripción**: Obtiene las películas más populares
-- **Respuesta**: Array de `TopMovie[]`
+---
 
-### `/api/movies/search?q={query}`
-- **Método**: GET
-- **Parámetros**: `q` (string) - Término de búsqueda
-- **Descripción**: Busca películas por título
-- **Respuesta**: Array de `QueryMovie[]`
-
-### `/api/movies/info?id={movieId}`
-- **Método**: GET
-- **Parámetros**: `id` (string) - ID de IMDB
-- **Descripción**: Información completa de una película
-- **Respuesta**: Objeto `InfoMovie`
-
-## 📊 Tipos de Datos
+## 📊 TypeScript Interfaces
 
 ### TopMovie
 ```typescript
 interface TopMovie {
   id?: string;
   poster?: string;
-  top?: string;
-  status?: {
-    info: "up" | "down";
-    number: string;
-  };
+  top?: string;           // Posición en ranking
   title?: string;
   year?: string;
-  duration?: string;
-  category?: string;
-  rating?: string;
+  rating?: string;        // Calificación promedio
 }
 ```
 
@@ -193,8 +255,8 @@ interface QueryMovie {
   poster?: string;
   title?: string;
   year?: string;
-  type?: string;
-  authors?: string[];
+  type?: string;          // "movie"
+  authors?: string[];     // (Vacío en versión actual)
 }
 ```
 
@@ -205,74 +267,129 @@ interface InfoMovie {
   title?: string;
   originalTitle?: string;
   year?: string;
-  category?: string;
-  duration?: string;
+  category?: string;       // Géneros separados por coma
+  duration?: string;       // Formato "2h 18min"
   rating?: string;
-  peopleRating?: string;
+  peopleRating?: string;   // Número de votos
   poster?: string;
-  tags?: string[];
+  tags?: string[];         // Array de géneros
   synopsis?: string;
-  trailer?: string;
-  direction?: string;
-  writers?: string[];
-  actors?: string[];
+  trailer?: string;        // URL de YouTube embed
+  direction?: string;      // Director
+  writers?: string[];      // Hasta 5 guionistas
+  actors?: string[];       // Top 10 actores
 }
 ```
 
-## 🌐 Fuente de Datos
+---
 
-CineDB utiliza **IMDB** como fuente principal de datos a través de web scraping:
-
-- **URL Base**: `https://www.imdb.com/es`
-- **Top Movies**: `/chart/moviemeter/`
-- **Búsqueda**: `/find?q={query}&s=tt&exact=true`
-- **Info**: `/title/{id}`
-
-Los datos se extraen utilizando Cheerio para parsear HTML y JSON-LD estructurado.
-
-## 🚀 Despliegue
-
-### Producción
-1. **Construir la aplicación**
-   ```bash
-   pnpm build
-   ```
-
-2. **Iniciar el servidor**
-   ```bash
-   pnpm start
-   ```
+## 🔧 Configuración Avanzada
 
 ### Variables de Entorno
-No se requieren variables de entorno adicionales para el funcionamiento básico.
 
-## 🤝 Contribución
+Archivo `.env.local`:
+```env
+# TMDB API Configuration
+TMDB_API_KEY=tu_token_bearer_aqui
+```
 
-1. Fork el repositorio
-2. Crea una rama para tu feature (`git checkout -b feature/nueva-caracteristica`)
-3. Commit tus cambios (`git commit -am 'Agregar nueva característica'`)
-4. Push a la rama (`git push origin feature/nueva-caracteristica`)
-5. Crea un Pull Request
+Archivo `.env.example` (para repositorio):
+```env
+# TMDB API Configuration
+# Obtén tu API Key en: https://www.themoviedb.org/settings/api
+# Usa el "API Read Access Token (v4 auth)" NO el "API Key (v3 auth)"
 
-## 📝 Licencia
+TMDB_API_KEY=your_tmdb_bearer_token_here
+```
 
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+### Next.js Config
 
-## 🔮 Roadmap
-
-- [ ] Implementar paginación en resultados de búsqueda
-- [ ] Agregar filtros por género y año
-- [ ] Sistema de favoritos con localStorage
-- [ ] Integración con más fuentes de datos
-- [ ] Modo claro/oscuro toggle
-- [ ] Optimización de SEO
-- [ ] Progressive Web App (PWA)
-- [ ] Internacionalización (i18n)
-
-## 📧 Contacto
-
-Para preguntas, sugerencias o reportes de errores, por favor abre un issue en el repositorio.
+El proyecto usa configuración estándar de Next.js 15 con Turbopack habilitado.
 
 ---
 
-**CineDB** - Descubre el mundo del cine de una manera moderna y elegante. 🎬✨
+## 🐛 Troubleshooting
+
+### Error: "TMDB_API_KEY no está configurada"
+- ✅ Verifica que existe el archivo `.env.local`
+- ✅ Asegúrate de usar `TMDB_API_KEY` (sin `NEXT_PUBLIC_`)
+- ✅ Reinicia el servidor de desarrollo (`pnpm dev`)
+
+### Error: "HTTP error! status: 401"
+- ❌ Tu API Key es inválida o expiró
+- ✅ Verifica que copiaste el **Read Access Token (v4)** completo
+- ✅ Regenera el token en TMDB si es necesario
+
+### No aparecen posters
+- ✅ Verifica tu conexión a internet
+- ✅ Chequea que TMDB esté operativo
+- ✅ Revisa la consola del navegador para errores de CORS
+
+### Build falla en Vercel
+- ✅ Asegúrate de agregar `TMDB_API_KEY` en Vercel Environment Variables
+- ✅ Verifica que el repositorio tiene todos los archivos necesarios
+- ✅ Revisa los logs de build en Vercel Dashboard
+
+---
+
+## 📝 Changelog
+
+### v2.0.0 (Enero 2026) - Migración TMDB
+- ✅ Migración completa de IMDB scraping a TMDB API
+- ✅ Eliminada dependencia de Cheerio
+- ✅ Trailers de YouTube integrados
+- ✅ Información de créditos completa (director, guionistas, actores)
+- ✅ Datos actualizados en tiempo real
+- ✅ Mejor rendimiento y confiabilidad
+
+### v1.0.0 (2024) - Versión Inicial
+- ✅ Web scraping de IMDB
+- ✅ Top películas
+- ✅ Búsqueda básica
+- ✅ Información detallada
+
+---
+
+## 🤝 Contribuciones
+
+Las contribuciones son bienvenidas. Por favor:
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add: AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo licencia MIT. Ver archivo `LICENSE` para más detalles.
+
+---
+
+## 🙏 Agradecimientos
+
+- [The Movie Database (TMDB)](https://www.themoviedb.org/) - Por su excelente API gratuita
+- [Next.js](https://nextjs.org/) - Framework increíble
+- [Vercel](https://vercel.com/) - Hosting y deploy simplificado
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
+- [Lucide Icons](https://lucide.dev/) - Iconos hermosos y consistentes
+
+---
+
+## 📞 Contacto
+
+**Proyecto Link:** [https://github.com/YeralAndre/cine-db](https://github.com/YeralAndre/cine-db)
+
+**Live Demo:** [https://cine-db.vercel.app](https://cine-db.vercel.app)
+
+---
+
+<div align="center">
+
+**⭐ Si te gustó el proyecto, dale una estrella en GitHub ⭐**
+
+Hecho con ❤️ usando Next.js y TMDB API
+
+</div>

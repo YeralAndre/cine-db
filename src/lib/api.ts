@@ -1,137 +1,201 @@
-import * as cheerio from "cheerio";
 import * as APIInterfaces from "@/types/movies";
 
-async function fetchHtml(url: string): Promise<string> {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-  return await response.text();
+// ============================================
+// TMDB API CONFIGURATION
+// ============================================
+const TMDB_BASE_URL = "https://api.themoviedb.org/3";
+const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
+const TMDB_API_KEY = process.env.TMDB_API_KEY;
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+/**
+ * Construye la URL completa del poster usando el path de TMDB
+ */
+function buildPosterUrl(path: string | null): string | undefined {
+  if (!path) return undefined;
+  return `${TMDB_IMAGE_BASE_URL}${path}`;
 }
 
-async function topMovies(url: string): Promise<APIInterfaces.TopMovie[]> {
-  const html = await fetchHtml(url);
-  const $ = cheerio.load(html);
+/**
+ * Construye la URL de YouTube embed para el trailer
+ */
+function buildTrailerUrl(key: string | null): string | undefined {
+  if (!key) return undefined;
+  return `https://www.youtube.com/embed/${key}`;
+}
+
+/**
+ * Convierte minutos a formato "Xh Ymin"
+ * Ejemplo: 148 → "2h 28min"
+ */
+function formatRuntime(minutes: number | null): string {
+  if (!minutes) return "";
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours === 0) return `${mins}min`;
+  if (mins === 0) return `${hours}h`;
+  return `${hours}h ${mins}min`;
+}
+
+/**
+ * Realiza una petición a la API de TMDB con autenticación
+ */
+async function fetchTMDB(endpoint: string): Promise<any> {
+  if (!TMDB_API_KEY) {
+    throw new Error("TMDB_API_KEY no está configurada en las variables de entorno");
+  }
+
+  const url = `${TMDB_BASE_URL}${endpoint}`;
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${TMDB_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`TMDB API error! status: ${response.status}`);
+  }
+
+  return await response.json();
+}
+
+// ============================================
+// MAIN FUNCTIONS
+// ============================================
+
+/**
+ * Obtiene las películas populares de TMDB
+ * Mapea a la interfaz TopMovie
+ */
+async function topMovies(): Promise<APIInterfaces.TopMovie[]> {
+  const data = await fetchTMDB("/movie/popular?language=es-ES&page=1");
   const movies: APIInterfaces.TopMovie[] = [];
 
-  $(".ipc-metadata-list")
-    .children(".ipc-metadata-list-summary-item")
-    .each((_, element) => {
-      const data: APIInterfaces.TopMovie = {};
-      data["poster"] = $(element)
-        .find(".cli-poster-container")
-        .find("img")
-        .attr("src");
-      const children = $(element).find(".cli-children");
-      data["top"] = children
-        .find(".cli-meter-title-header")
-        .text()
-        .split("(")[0]
-        .trim();
-      const status =
-        children
-          .find(".cli-meter-title-header")
-          .find("span")
-          .attr("aria-label")
-          ?.toLowerCase() || "";
-      data["status"] = {
-        info: status.startsWith("subi") ? "up" : "down",
-        number: status.split(" ")[1] || "0",
-      };
-      data["id"] =
-        children.find(".ipc-title").find("a").attr("href")?.split("/")[3] ||
-        undefined;
-      data["title"] = children.find(".ipc-title").text().trim();
-      const metadata = children
-        .find(".cli-title-metadata")
-        .children("span")
-        .map((_, span) => $(span).text().trim())
-        .get();
-      data["year"] = metadata[0] || "";
-      data["duration"] = metadata[1] || "";
-      data["category"] = metadata[2] || "";
-      data["rating"] =
-        children.find(".ipc-rating-star--rating").text().trim() || "";
-      movies.push(data);
-    });
+  data.results.forEach((movie: any, index: number) => {
+    const topMovie: APIInterfaces.TopMovie = {
+      id: movie.id?.toString(),
+      poster: buildPosterUrl(movie.poster_path),
+      top: (index + 1).toString(), // Ranking basado en posición
+      title: movie.title,
+      year: movie.release_date?.split("-")[0] || "",
+      rating: movie.vote_average?.toFixed(1) || "",
+    };
+    movies.push(topMovie);
+  });
 
   return movies;
 }
 
-async function searchMovies(url: string): Promise<APIInterfaces.QueryMovie[]> {
-  const html = await fetchHtml(url);
-  const $ = cheerio.load(html);
+/**
+ * Busca películas por término de búsqueda
+ * Mapea a la interfaz QueryMovie
+ */
+async function searchMovies(query: string): Promise<APIInterfaces.QueryMovie[]> {
+  const encodedQuery = encodeURIComponent(query);
+  const data = await fetchTMDB(`/search/movie?query=${encodedQuery}&language=es-ES&page=1`);
   const movies: APIInterfaces.QueryMovie[] = [];
 
-  $(".ipc-metadata-list")
-    .children(".ipc-metadata-list-summary-item")
-    .each((_, element) => {
-      const data: APIInterfaces.QueryMovie = {};
-      data["poster"] = $(element).find(".ipc-media img").attr("src")
-        ? $(element).find(".ipc-media img").attr("src")?.split("@._")[0] + "@.jpg"
-        : undefined;
-      const children = $(element).find(".ipc-metadata-list-summary-item__c");
-      data["id"] = children.find("a").attr("href")?.split("/")[3] || undefined;
-      data["title"] = children.find("a").text().trim();
-      const metadata = children.find("ul").map((_, ul) => $(ul));
-      const specs = metadata[0]
-        ?.find("li")
-        ?.map((_, li) => $(li).text().trim())
-        ?.get();
-      data["year"] = specs[0] || undefined;
-      data["type"] = specs[1] || undefined;
-      data["authors"] =
-        metadata[1]
-          ?.text()
-          ?.split(",")
-          ?.map((x) => x.trim()) || [];
-      if (data["authors"][0] === "") {
-        data["authors"] = [];
-      }
-      movies.push(data);
-      console.log(data.poster);
-    });
+  // Para obtener authors necesitaríamos llamar credits por cada película
+  // Por performance, solo incluimos datos básicos de la búsqueda
+  data.results.forEach((movie: any) => {
+    const queryMovie: APIInterfaces.QueryMovie = {
+      id: movie.id?.toString(),
+      poster: buildPosterUrl(movie.poster_path),
+      title: movie.title,
+      year: movie.release_date?.split("-")[0] || "",
+      type: "movie", // TMDB search siempre es movie en este endpoint
+      authors: [], // Requeriría llamada adicional a /movie/{id}/credits
+    };
+    movies.push(queryMovie);
+  });
 
   return movies;
 }
 
-async function infoMovie(url: string): Promise<APIInterfaces.InfoMovie> {
-  const html = await fetchHtml(url);
-  const $ = cheerio.load(html);
-  const element = $("script[type='application/ld+json']");
-  const json = JSON.parse(element?.html?.() as string);
+/**
+ * Obtiene información detallada de una película específica
+ * Usa append_to_response para obtener videos y credits en una sola llamada
+ * Mapea a la interfaz InfoMovie
+ */
+async function infoMovie(movieId: string): Promise<APIInterfaces.InfoMovie> {
+  // Una sola llamada con append_to_response para optimizar
+  const data = await fetchTMDB(
+    `/movie/${movieId}?language=es-ES&append_to_response=videos,credits`
+  );
 
-  const data: APIInterfaces.InfoMovie = {
-    id: url.split("/")[5] || undefined,
-    title: json.name || "",
-    originalTitle: json.alternateName || "",
-    year: json.datePublished?.split("-")[0] || "",
-    category: Array.isArray(json.genre)
-      ? json.genre.join(", ")
-      : json.genre || "",
-    duration:
-      json.duration
-        ?.replaceAll("PT", "")
-        .replaceAll("M", "min")
-        .replaceAll("H", "h ") || "",
-    rating: json.aggregateRating?.ratingValue?.toString() || "",
-    peopleRating: json.aggregateRating?.ratingCount?.toString() || "",
-    poster: json.image || "",
-    tags: Array.isArray(json.genre) ? json.genre : [],
-    synopsis: json.description || "",
-    trailer: json.trailer?.embedUrl || "",
-    direction: Array.isArray(json.director)
-      ? json.director.map((d: { name: string }) => d.name).join(", ")
-      : json.director?.name || "",
-    writers: (json.creator || [])
-      .filter((c: { "@type": string }) => c["@type"] === "Person")
-      .map((w: { name: string }) => w.name),
-    actors: (json.actor || []).map((a: { name: string }) => a.name),
+  // Extraer trailer de YouTube
+  let trailerUrl: string | undefined;
+  if (data.videos?.results) {
+    const trailer = data.videos.results.find(
+      (video: any) => video.type === "Trailer" && video.site === "YouTube"
+    );
+    trailerUrl = buildTrailerUrl(trailer?.key);
+  }
+
+  // Extraer director de los credits
+  let director = "";
+  if (data.credits?.crew) {
+    const directorData = data.credits.crew.find(
+      (person: any) => person.job === "Director"
+    );
+    director = directorData?.name || "";
+  }
+
+  // Extraer escritores de los credits
+  let writers: string[] = [];
+  if (data.credits?.crew) {
+    writers = data.credits.crew
+      .filter((person: any) => person.department === "Writing")
+      .map((person: any) => person.name)
+      .slice(0, 5); // Limitar a 5 escritores principales
+  }
+
+  // Extraer actores principales
+  let actors: string[] = [];
+  if (data.credits?.cast) {
+    actors = data.credits.cast
+      .slice(0, 10) // Top 10 actores
+      .map((actor: any) => actor.name);
+  }
+
+  // Construir objeto InfoMovie
+  const infoMovie: APIInterfaces.InfoMovie = {
+    id: data.id?.toString(),
+    title: data.title || "",
+    originalTitle: data.original_title || "",
+    year: data.release_date?.split("-")[0] || "",
+    category: data.genres?.map((g: any) => g.name).join(", ") || "",
+    duration: formatRuntime(data.runtime),
+    rating: data.vote_average?.toFixed(1) || "",
+    peopleRating: data.vote_count?.toString() || "",
+    poster: buildPosterUrl(data.poster_path),
+    tags: data.genres?.map((g: any) => g.name) || [],
+    synopsis: data.overview || "",
+    trailer: trailerUrl,
+    direction: director,
+    writers: writers,
+    actors: actors,
   };
 
-  return data;
+  return infoMovie;
 }
 
+// ============================================
+// EXPORTED API FUNCTION
+// ============================================
+
+/**
+ * Función principal de la API
+ * Mantiene la misma firma que la versión original con IMDB scraping
+ * 
+ * @param type - Tipo de consulta: "top" | "search" | "info"
+ * @param query - Parámetro opcional: término de búsqueda o ID de película
+ * @returns Promise con array de películas o info de película individual
+ */
 export default async function api(
   type: "top" | "search" | "info",
   query?: string
@@ -141,31 +205,29 @@ export default async function api(
   | APIInterfaces.InfoMovie
 > {
   try {
-    const baseUrl = "https://www.imdb.com/es";
-    let url = "";
     switch (type) {
       case "top":
-        url = `${baseUrl}/chart/moviemeter/`;
-        return topMovies(url);
+        return await topMovies();
+      
       case "search":
         if (!query) {
           throw new Error("Search query is required for 'search' type.");
         }
-        url = `${baseUrl}/find?q=${encodeURIComponent(query)}&s=tt&exact=true`;
-        return searchMovies(url);
+        return await searchMovies(query);
+      
       case "info":
         if (!query) {
           throw new Error("Movie ID is required for 'info' type.");
         }
-        url = `${baseUrl}/title/${query}`;
-        return infoMovie(url);
+        return await infoMovie(query);
+      
       default:
         throw new Error(
           "Invalid type provided. Use 'top', 'search', or 'info'."
         );
     }
   } catch (error) {
-    console.error("Error fetching data from API:", error);
+    console.error("Error fetching data from TMDB API:", error);
     throw error;
   }
 }

@@ -51,10 +51,10 @@ export default function InfoPage({
           </p>
           <div className="flex flex-row gap-2 items-center text-gray-300">
             <div className="flex items-center gap-1">
-              <Star className="w-5 h-5 !text-yellow-400 fill-current" />
-              <span className="font-bold !text-white">
+              <Star className="w-5 h-5 text-yellow-400! fill-current" />
+              <span className="font-bold text-white!">
                 {movie.rating}
-                <span className="!font-medium !text-gray-300">/10</span>
+                <span className="font-medium! text-gray-300!">/10</span>
               </span>
             </div>
             <div className="flex items-center gap-1">
@@ -107,15 +107,19 @@ export default function InfoPage({
         </div>
       </div>
       {movie.trailer && (
-        <iframe
-          src={
-            "https://www.imdb.com/es/video/embed/" +
-            movie.trailer?.split("/")[5]
-          }
-          width={"1080px"}
-          height={"720px"}
-          allowFullScreen={true}
-        ></iframe>
+        <div className="w-full max-w-5xl">
+          <h2 className="text-3xl font-semibold text-amber-400 mb-4">
+            Trailer
+          </h2>
+          <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+            <iframe
+              src={movie.trailer}
+              className="absolute top-0 left-0 w-full h-full rounded-lg"
+              allowFullScreen
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            ></iframe>
+          </div>
+        </div>
       )}
     </div>
   );

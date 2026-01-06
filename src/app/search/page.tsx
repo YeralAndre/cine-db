@@ -77,7 +77,7 @@ export default function SearchPage() {
               onClick={() => (window.location.href = `/info/${movie.id}`)}
               aria-label={`Ver información de ${movie.title}`}
             >
-              <div className="w-full aspect-[2/3] mb-2 relative overflow-hidden rounded-lg">
+              <div className="w-full aspect-2/3 mb-2 relative overflow-hidden rounded-lg">
                 <Image
                   src={movie.poster ? movie.poster : placeholder}
                   alt={`${movie.title} poster`}
