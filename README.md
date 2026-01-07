@@ -7,6 +7,7 @@ Una aplicación web moderna para explorar películas populares, buscar informaci
 ## ✨ Características
 
 - **🏆 Top 20 Películas Populares**: Visualiza las películas más populares del momento según TMDB
+- **🎭 Filtros por Género**: Descubre películas por categorías (Acción, Comedia, Drama, Terror, Sci-Fi, Romance, Suspenso)
 - **🔍 Búsqueda Instantánea**: Busca películas por título con resultados en tiempo real
 - **📊 Información Detallada**: Accede a información completa incluyendo:
   - Sinopsis y calificaciones (TMDB ratings)
@@ -14,22 +15,29 @@ Una aplicación web moderna para explorar películas populares, buscar informaci
   - Duración, año de lanzamiento y géneros
   - **Tráilers de YouTube** integrados
   - Número de votos de usuarios
+  - **Películas recomendadas** basadas en la película actual
+  - **Películas similares** con carrusel horizontal
 - **📱 Diseño Responsivo**: Optimizado para dispositivos móviles, tablets y desktop
-- **🎨 Interfaz Moderna**: Diseño oscuro con acentos en color ámbar
-- **⚡ Rendimiento Optimizado**: Construido con Next.js 15 y Turbopack
+- **🎨 Interfaz Moderna**: 
+  - Diseño oscuro con acentos en gradiente ámbar/dorado
+  - Navbar glassmorphism con backdrop-blur
+  - Custom scrollbar elegante
+  - Footer sticky al final
+  - Efectos hover con transiciones suaves
+- **⚡ Rendimiento Optimizado**: Construido con Next.js 16 y Turbopack
 - **🌐 Contenido en Español**: Datos traducidos automáticamente por TMDB
 
 ## 🛠️ Tecnologías Utilizadas
 
 ### Frontend
-- **Next.js 15.4.2** - Framework de React con App Router
-- **React 19.1.0** - Biblioteca de interfaz de usuario
-- **TypeScript 5** - Tipado estático para JavaScript
-- **Tailwind CSS 4** - Framework de CSS utilitario
+- **Next.js 16.1.1** - Framework de React con App Router
+- **React 19.2.3** - Biblioteca de interfaz de usuario
+- **TypeScript 5.9.3** - Tipado estático para JavaScript
+- **Tailwind CSS 4.1.18** - Framework de CSS utilitario con gradientes personalizados
 - **Lucide React** - Iconos modernos y accesibles
 
 ### Backend & APIs
-- **Next.js API Routes** - Server-side endpoints
+- **Next.js API Routes** - Server-side endpoints como proxy
 - **TMDB API (v3)** - The Movie Database API oficial
 - **Fetch API** - Peticiones HTTP nativas (sin librerías externas)
 
@@ -125,32 +133,38 @@ Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 cine-db/
 ├── src/
 │   ├── app/                    # App Router de Next.js
-│   │   ├── page.tsx           # Página principal (Top 20 películas)
-│   │   ├── layout.tsx         # Layout principal con Navbar
-│   │   ├── globals.css        # Estilos globales
+│   │   ├── page.tsx           # Página principal (Top películas + filtros de género)
+│   │   ├── layout.tsx         # Layout principal con Navbar y Footer
+│   │   ├── globals.css        # Estilos globales (gradientes, scrollbar)
 │   │   ├── api/               # API Routes (Server-side)
 │   │   │   └── movies/        # Endpoints de películas
 │   │   │       ├── top/       # GET /api/movies/top
 │   │   │       ├── search/    # GET /api/movies/search?q={query}
-│   │   │       └── info/      # GET /api/movies/info?id={movieId}
+│   │   │       ├── info/      # GET /api/movies/info?id={movieId}
+│   │   │       ├── discover/  # GET /api/movies/discover?with_genres={id}
+│   │   │       ├── recommendations/ # GET /api/movies/recommendations?id={movieId}
+│   │   │       └── similar/   # GET /api/movies/similar?id={movieId}
 │   │   ├── search/            # Página de búsqueda
 │   │   │   └── page.tsx       # /search
 │   │   └── info/[id]/         # Página de detalles
 │   │       └── page.tsx       # /info/{id}
 │   ├── components/            # Componentes reutilizables
-│   │   ├── Navbar.tsx         # Barra de navegación
-│   │   ├── TopCard.tsx        # Tarjeta de película popular
-│   │   ├── SearchResultCard.tsx # (No usado - integrado en search/page.tsx)
+│   │   ├── Navbar.tsx         # Barra de navegación con glassmorphism
+│   │   ├── Footer.tsx         # Footer sticky al final
+│   │   ├── TopCard.tsx        # Tarjeta de película popular con hover effects
+│   │   ├── MoviesCard.tsx     # Tarjeta compacta para carruseles
+│   │   ├── MoviesInfoSections.tsx # Sección de carrusel horizontal
+│   │   ├── GenreFilterCard.tsx # Chip de filtro de género
 │   │   └── Loading.tsx        # Spinner de carga
 │   ├── lib/                   # Lógica de negocio
-│   │   ├── api.ts            # ⭐ Cliente TMDB API (core)
+│   │   ├── api.ts            # ⭐ Cliente TMDB API (core) con 6 endpoints
 │   │   └── fetchAPI.ts       # Cliente de API interno
 │   ├── types/                 # TypeScript Interfaces
-│   │   ├── movies.d.ts       # TopMovie, QueryMovie, InfoMovie
+│   │   ├── movies.d.ts       # Movie, QueryMovie, InfoMovie
 │   │   └── images.d.ts       # Tipos para importar imágenes
 │   └── assets/               # Recursos estáticos
 │       ├── placeholder.png   # Imagen placeholder
-│       └── placeholder.svg   # SVG placeholder
+│       └── logo.png          # Logo de CineDB
 ├── public/                   # Archivos públicos estáticos
 ├── .env.example             # Plantilla de variables de entorno
 ├── package.json             # Dependencias y scripts
@@ -183,16 +197,29 @@ Estos endpoints son consumidos por el frontend:
 
 ```
 GET /api/movies/top
-└── Retorna: TopMovie[]
-    └── Top 20 películas populares
+└── Retorna: Movie[]
+    └── Top 20 películas populares de TMDB
+
+GET /api/movies/discover?with_genres={genreId}&sort_by=popularity.desc&language=es-ES
+└── Retorna: Movie[]
+    └── Películas filtradas por género
+    └── Ejemplo: /api/movies/discover?with_genres=28 (Acción)
 
 GET /api/movies/search?q={query}
 └── Retorna: QueryMovie[]
-    └── Resultados de búsqueda
+    └── Resultados de búsqueda por título
 
 GET /api/movies/info?id={movieId}
 └── Retorna: InfoMovie
-    └── Información completa de película + trailer + créditos
+    └── Información completa: detalles + trailer + créditos
+
+GET /api/movies/recommendations?id={movieId}
+└── Retorna: Movie[]
+    └── Películas recomendadas basadas en algoritmo de TMDB
+
+GET /api/movies/similar?id={movieId}
+└── Retorna: Movie[]
+    └── Películas similares por género y keywords
 ```
 
 ### TMDB API (Backend)
@@ -203,11 +230,20 @@ El archivo `src/lib/api.ts` consume estos endpoints de TMDB:
 GET https://api.themoviedb.org/3/movie/popular
 └── Usado por: topMovies()
 
+GET https://api.themoviedb.org/3/discover/movie?with_genres={id}
+└── Usado por: discoverMovies()
+
 GET https://api.themoviedb.org/3/search/movie?query={q}
 └── Usado por: searchMovies()
 
 GET https://api.themoviedb.org/3/movie/{id}?append_to_response=videos,credits
 └── Usado por: infoMovie()
+
+GET https://api.themoviedb.org/3/movie/{id}/recommendations
+└── Usado por: recommendedMovies()
+
+GET https://api.themoviedb.org/3/movie/{id}/similar
+└── Usado por: similarMovies()
 ```
 
 ---
@@ -215,38 +251,57 @@ GET https://api.themoviedb.org/3/movie/{id}?append_to_response=videos,credits
 ## 🎨 Diseño y UX
 
 ### Paleta de Colores
-- **Fondo Principal**: Gris oscuro (`gray-950`)
-- **Acento Primario**: Ámbar (`amber-400`, `amber-500`)
+- **Fondo Principal**: Gris oscuro (`gray-950`, `#030712`)
+- **Acento Primario**: Gradiente ámbar/dorado (`#fbbf24` → `#d97706`)
 - **Texto**: Blanco y grises (`gray-100`, `gray-300`, `gray-400`)
 - **Tarjetas**: Gris medio (`gray-800`, `gray-900`)
-- **Bordes**: Grises translúcidos
+- **Bordes**: Grises translúcidos con hover amber
+- **Navbar**: Glassmorphism con `backdrop-blur-sm` y `bg-gray-950/80`
 
 ### Tipografía
-- Sistema de fuentes nativo (optimizado por Tailwind)
+- **Fuente Principal**: Inter (Google Fonts)
 - Tamaños adaptables según viewport
-- Weights: Normal (400), Medium (500), Semibold (600), Bold (700)
+- Weights: Light (300), Regular (400), Medium (500), Semibold (600), Bold (700), ExtraBold (800)
 
-### Interacciones
-- Hover states en tarjetas y botones
-- Transiciones suaves (200ms)
-- Loading spinners animados
-- Responsive grid adaptable
+### Efectos y Animaciones
+- **Gradientes Personalizados**:
+  - `.text-gradient`: Texto con gradiente amber (para títulos)
+  - `.bg-gradient`: Fondo con gradiente amber (para botones/badges)
+- **Custom Scrollbar**: 
+  - Ancho 8px, color `gray-600` con hover `gray-500`
+  - Compatible con WebKit y Firefox
+- **Hover States**: 
+  - Tarjetas con borde amber y elevación
+  - Géneros con background amber translúcido
+  - Transiciones suaves de 200-250ms
+- **Loading States**: Spinner animado con rotación
+- **Glassmorphism**: Navbar con efecto vidrio esmerilado
+
+### Layout Responsivo
+- **Mobile First**: Optimizado para pantallas pequeñas
+- **Grid Adaptable**: Cambios en breakpoints md, lg, xl
+- **Footer Sticky**: Siempre al final con `flex-1` en main
+- **Carruseles Horizontales**: Con scroll suave y custom scrollbar
 
 ---
 
 ## 📊 TypeScript Interfaces
 
-### TopMovie
+### Movie (Principal)
 ```typescript
-interface TopMovie {
+interface Movie {
   id?: string;
   poster?: string;
   top?: string;           // Posición en ranking
   title?: string;
   year?: string;
-  rating?: string;        // Calificación promedio
+  rating?: string;        // Calificación promedio (0-10)
+  genres?: string[];      // Array de géneros en español
+  overview?: string;      // Sinopsis
+  adult?: boolean;        // Clasificación +18
 }
 ```
+**Uso**: Popular, Discover, Recommendations, Similar
 
 ### QueryMovie
 ```typescript
@@ -256,9 +311,10 @@ interface QueryMovie {
   title?: string;
   year?: string;
   type?: string;          // "movie"
-  authors?: string[];     // (Vacío en versión actual)
+  authors?: string[];     // Array de directores (opcional)
 }
 ```
+**Uso**: Resultados de búsqueda
 
 ### InfoMovie
 ```typescript
@@ -269,17 +325,44 @@ interface InfoMovie {
   year?: string;
   category?: string;       // Géneros separados por coma
   duration?: string;       // Formato "2h 18min"
-  rating?: string;
+  rating?: string;         // Calificación TMDB (0-10)
   peopleRating?: string;   // Número de votos
-  poster?: string;
+  poster?: string;         // URL completa de poster TMDB
   tags?: string[];         // Array de géneros
-  synopsis?: string;
-  trailer?: string;        // URL de YouTube embed
-  direction?: string;      // Director
+  synopsis?: string;       // Descripción completa
+  trailer?: string;        // YouTube video ID para embed
+  direction?: string;      // Director principal
   writers?: string[];      // Hasta 5 guionistas
-  actors?: string[];       // Top 10 actores
+  actors?: string[];       // Top 10 actores principales
 }
 ```
+**Uso**: Página de detalles `/info/[id]`
+
+---
+
+## 🎭 Géneros Disponibles
+
+Sistema de filtrado por género con 8 categorías principales:
+
+```typescript
+const genres = [
+  { id: null, name: "Todos" },        // Muestra películas populares
+  { id: 28, name: "Acción" },
+  { id: 35, name: "Comedia" },
+  { id: 18, name: "Drama" },
+  { id: 27, name: "Terror" },
+  { id: 878, name: "Ciencia Ficción" },
+  { id: 10749, name: "Romance" },
+  { id: 53, name: "Suspenso" },
+];
+```
+
+**Mapeo completo de géneros TMDB** (disponible en `src/lib/api.ts`):
+- 28: Acción | 12: Aventura | 16: Animación | 35: Comedia
+- 80: Crimen | 99: Documental | 18: Drama | 10751: Familia
+- 14: Fantasía | 36: Historia | 27: Terror | 10402: Música
+- 9648: Misterio | 10749: Romance | 878: Ciencia ficción
+- 10770: Película de TV | 53: Suspenso | 10752: Bélica | 37: Western
 
 ---
 
@@ -333,6 +416,18 @@ El proyecto usa configuración estándar de Next.js 15 con Turbopack habilitado.
 ---
 
 ## 📝 Changelog
+
+### v2.1.0 (Enero 2026) - Feature Update
+- ✅ **Filtros por género**: Sistema de discover con 8 categorías
+- ✅ **Películas recomendadas y similares**: Endpoints y carruseles horizontales
+- ✅ **Interfaz Movie**: Renombrada de TopMovie, ahora más versátil
+- ✅ **Custom scrollbar**: Diseño elegante con colores del tema
+- ✅ **Gradientes personalizados**: `.text-gradient` y `.bg-gradient` en CSS
+- ✅ **Navbar glassmorphism**: Efecto vidrio esmerilado con backdrop-blur
+- ✅ **Footer sticky**: Siempre al final con layout flex
+- ✅ **Componentes nuevos**: `MoviesCard`, `MoviesInfoSections`, `GenreFilterCard`
+- ✅ **Actualización de dependencias**: Next.js 16.1.1, React 19.2.3
+- ✅ **Mejoras de UX**: Hover effects, transiciones suaves, loading states
 
 ### v2.0.0 (Enero 2026) - Migración TMDB
 - ✅ Migración completa de IMDB scraping a TMDB API
