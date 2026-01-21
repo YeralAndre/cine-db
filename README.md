@@ -1,5 +1,14 @@
 # 🎬 CineDB
 
+<div align="center">
+  <img src="public/favicon.ico" width="64" height="64" alt="Favicon" />
+  <br />
+  <img src="src/assets/logo.png" height="64" alt="Logo" />
+  <br />
+</div>
+
+#
+
 Una aplicación web moderna para explorar películas populares, buscar información detallada y descubrir nuevos títulos. CineDB utiliza la API de **The Movie Database (TMDB)** para proporcionar una experiencia completa de navegación cinematográfica con datos actualizados en tiempo real.
 
 > **🔄 Migración Completada:** Este proyecto ha sido migrado exitosamente de IMDB web scraping a TMDB API (Enero 2026).
