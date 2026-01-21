@@ -2,11 +2,11 @@
 
 <div align="center">
   <img src="public/favicon.ico" width="64" height="64" alt="Favicon" />
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  &nbsp;&nbsp;&nbsp;&nbsp;
   <img src="src/assets/logo.png" height="64" alt="Logo" />
 </div>
 
-#
+######
 
 Una aplicación web moderna para explorar películas populares, buscar información detallada y descubrir nuevos títulos. CineDB utiliza la API de **The Movie Database (TMDB)** para proporcionar una experiencia completa de navegación cinematográfica con datos actualizados en tiempo real.
 
