@@ -33,6 +33,24 @@ Una aplicación web moderna para explorar películas populares, buscar informaci
 - **⚡ Rendimiento Optimizado**: Construido con Next.js 16 y Turbopack
 - **🌐 Contenido en Español**: Datos traducidos automáticamente por TMDB
 
+## 📸 Galería
+
+<div align="center">
+
+### Exploración de Categorías
+
+![Home Page](docs/images/home.png)
+
+### Detalles Completos
+
+![Movie Details](docs/images/details.png)
+
+### Búsqueda Rápida
+
+![Search Results](docs/images/search.png)
+
+</div>
+
 ## 🛠️ Tecnologías Utilizadas
 
 ### Frontend
