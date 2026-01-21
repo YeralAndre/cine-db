@@ -1,5 +1,7 @@
 # 🎬 CineDB
 
+######
+
 <div align="center">
   <img src="public/favicon.ico" width="64" height="64" alt="Favicon" />
   &nbsp;&nbsp;&nbsp;&nbsp;
