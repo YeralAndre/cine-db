@@ -72,7 +72,7 @@ function formatRuntime(minutes: number | null): string {
 async function fetchTMDB(endpoint: string): Promise<any> {
   if (!TMDB_API_KEY) {
     throw new Error(
-      "TMDB_API_KEY no está configurada en las variables de entorno"
+      "TMDB_API_KEY no está configurada en las variables de entorno",
     );
   }
 
@@ -99,13 +99,20 @@ async function fetchTMDB(endpoint: string): Promise<any> {
  * Obtiene las películas populares de TMDB
  * Mapea a la interfaz Movie
  */
-async function topMovies(): Promise<APIInterfaces.Movie[]> {
-  const data = await fetchTMDB("/movie/popular?language=es-ES&page=1");
+async function topMovies(page: number = 1): Promise<APIInterfaces.Movie[]> {
+  const data = await fetchTMDB(`/movie/popular?language=es-ES&page=${page}`);
   const movies: APIInterfaces.Movie[] = [];
+  const seenIds = new Set<string>();
 
   data.results.forEach((movie: any, index: number) => {
+    const movieId = movie.id?.toString();
+
+    // Prevenir duplicados
+    if (!movieId || seenIds.has(movieId)) return;
+    seenIds.add(movieId);
+
     const movieData: APIInterfaces.Movie = {
-      id: movie.id?.toString(),
+      id: movieId,
       poster: buildPosterUrl(movie.poster_path),
       top: (index + 1).toString(), // Ranking basado en posición
       title: movie.title,
@@ -124,6 +131,106 @@ async function topMovies(): Promise<APIInterfaces.Movie[]> {
 }
 
 /**
+ * Obtiene las películas mejor valoradas de TMDB
+ * Mapea a la interfaz Movie
+ */
+async function topRated(page: number = 1): Promise<APIInterfaces.Movie[]> {
+  const data = await fetchTMDB(`/movie/top_rated?language=es-ES&page=${page}`);
+  const movies: APIInterfaces.Movie[] = [];
+  const seenIds = new Set<string>();
+
+  data.results.forEach((movie: any, index: number) => {
+    const movieId = movie.id?.toString();
+
+    if (!movieId || seenIds.has(movieId)) return;
+    seenIds.add(movieId);
+
+    const movieData: APIInterfaces.Movie = {
+      id: movieId,
+      poster: buildPosterUrl(movie.poster_path),
+      top: (index + 1).toString(), // Ranking basado en posición
+      title: movie.title,
+      year: movie.release_date?.split("-")[0] || "",
+      rating: movie.vote_average?.toFixed(1) || "",
+      genres: movie.genre_ids
+        ?.map((id: number) => genreMap[id])
+        .filter((name: string | undefined) => name !== undefined) as string[],
+      overview: movie.overview || "",
+      adult: movie.adult || false,
+    };
+
+    movies.push(movieData);
+  });
+  return movies;
+}
+
+/**
+ * Obtiene las películas que se están reproduciendo actualmente en cines
+ * Mapea a la interfaz Movie
+ */
+async function nowPlaying(page: number = 1): Promise<APIInterfaces.Movie[]> {
+  const data = await fetchTMDB(
+    `/movie/now_playing?language=es-ES&page=${page}`,
+  );
+  const movies: APIInterfaces.Movie[] = [];
+  const seenIds = new Set<string>();
+
+  data.results.forEach((movie: any, index: number) => {
+    const movieId = movie.id?.toString();
+
+    if (!movieId || seenIds.has(movieId)) return;
+    seenIds.add(movieId);
+
+    const movieData: APIInterfaces.Movie = {
+      id: movieId,
+      poster: buildPosterUrl(movie.poster_path),
+      top: (index + 1).toString(), // Ranking basado en posición
+      title: movie.title,
+      year: movie.release_date?.split("-")[0] || "",
+      rating: movie.vote_average?.toFixed(1) || "",
+      genres: movie.genre_ids
+        ?.map((id: number) => genreMap[id])
+        .filter((name: string | undefined) => name !== undefined) as string[],
+      overview: movie.overview || "",
+      adult: movie.adult || false,
+    };
+
+    movies.push(movieData);
+  });
+  return movies;
+}
+
+async function upcoming(page: number = 1): Promise<APIInterfaces.Movie[]> {
+  const data = await fetchTMDB(`/movie/upcoming?language=es-ES&page=${page}`);
+  const movies: APIInterfaces.Movie[] = [];
+  const seenIds = new Set<string>();
+
+  data.results.forEach((movie: any, index: number) => {
+    const movieId = movie.id?.toString();
+
+    if (!movieId || seenIds.has(movieId)) return;
+    seenIds.add(movieId);
+
+    const movieData: APIInterfaces.Movie = {
+      id: movieId,
+      poster: buildPosterUrl(movie.poster_path),
+      top: (index + 1).toString(), // Ranking basado en posición
+      title: movie.title,
+      year: movie.release_date?.split("-")[0] || "",
+      rating: movie.vote_average?.toFixed(1) || "",
+      genres: movie.genre_ids
+        ?.map((id: number) => genreMap[id])
+        .filter((name: string | undefined) => name !== undefined) as string[],
+      overview: movie.overview || "",
+      adult: movie.adult || false,
+    };
+
+    movies.push(movieData);
+  });
+  return movies;
+}
+
+/**
  * Descubre películas por género
  * Mapea a la interfaz Movie (mismo formato que popular)
  */
@@ -131,17 +238,26 @@ async function discoverMovies(params: {
   with_genres: string;
   sort_by?: string;
   language?: string;
+  page?: number;
 }): Promise<APIInterfaces.Movie[]> {
   const sortBy = params.sort_by || "popularity.desc";
   const language = params.language || "es-ES";
+  const page = params.page || 1;
   const data = await fetchTMDB(
-    `/discover/movie?with_genres=${params.with_genres}&sort_by=${sortBy}&language=${language}&page=1`
+    `/discover/movie?with_genres=${params.with_genres}&sort_by=${sortBy}&language=${language}&page=${page}`,
   );
   const movies: APIInterfaces.Movie[] = [];
+  const seenIds = new Set<string>();
 
   data.results.forEach((movie: any, index: number) => {
+    const movieId = movie.id?.toString();
+
+    // Prevenir duplicados
+    if (!movieId || seenIds.has(movieId)) return;
+    seenIds.add(movieId);
+
     const movieData: APIInterfaces.Movie = {
-      id: movie.id?.toString(),
+      id: movieId,
       poster: buildPosterUrl(movie.poster_path),
       top: (index + 1).toString(),
       title: movie.title,
@@ -163,13 +279,24 @@ async function discoverMovies(params: {
  * Obtiene películas recomendadas basadas en una película
  * Mapea a la interfaz Movie
  */
-async function recommendedMovies(movieId: string): Promise<APIInterfaces.Movie[]> {
-  const data = await fetchTMDB(`/movie/${movieId}/recommendations?language=es-ES&page=1`);
+async function recommendedMovies(
+  movieId: string,
+): Promise<APIInterfaces.Movie[]> {
+  const data = await fetchTMDB(
+    `/movie/${movieId}/recommendations?language=es-ES&page=1`,
+  );
   const movies: APIInterfaces.Movie[] = [];
+  const seenIds = new Set<string>();
 
   data.results.forEach((movie: any, index: number) => {
+    const movieIdStr = movie.id?.toString();
+
+    // Prevenir duplicados
+    if (!movieIdStr || seenIds.has(movieIdStr)) return;
+    seenIds.add(movieIdStr);
+
     const movieData: APIInterfaces.Movie = {
-      id: movie.id?.toString(),
+      id: movieIdStr,
       poster: buildPosterUrl(movie.poster_path),
       top: (index + 1).toString(),
       title: movie.title,
@@ -192,12 +319,21 @@ async function recommendedMovies(movieId: string): Promise<APIInterfaces.Movie[]
  * Mapea a la interfaz Movie
  */
 async function similarMovies(movieId: string): Promise<APIInterfaces.Movie[]> {
-  const data = await fetchTMDB(`/movie/${movieId}/similar?language=es-ES&page=1`);
+  const data = await fetchTMDB(
+    `/movie/${movieId}/similar?language=es-ES&page=1`,
+  );
   const movies: APIInterfaces.Movie[] = [];
+  const seenIds = new Set<string>();
 
   data.results.forEach((movie: any, index: number) => {
+    const movieIdStr = movie.id?.toString();
+
+    // Prevenir duplicados
+    if (!movieIdStr || seenIds.has(movieIdStr)) return;
+    seenIds.add(movieIdStr);
+
     const movieData: APIInterfaces.Movie = {
-      id: movie.id?.toString(),
+      id: movieIdStr,
       poster: buildPosterUrl(movie.poster_path),
       top: (index + 1).toString(),
       title: movie.title,
@@ -220,19 +356,27 @@ async function similarMovies(movieId: string): Promise<APIInterfaces.Movie[]> {
  * Mapea a la interfaz QueryMovie
  */
 async function searchMovies(
-  query: string
+  query: string,
+  page: number = 1,
 ): Promise<APIInterfaces.QueryMovie[]> {
   const encodedQuery = encodeURIComponent(query);
   const data = await fetchTMDB(
-    `/search/movie?query=${encodedQuery}&language=es-ES&page=1`
+    `/search/movie?query=${encodedQuery}&language=es-ES&page=${page}`,
   );
   const movies: APIInterfaces.QueryMovie[] = [];
+  const seenIds = new Set<string>();
 
   // Para obtener authors necesitaríamos llamar credits por cada película
   // Por performance, solo incluimos datos básicos de la búsqueda
   data.results.forEach((movie: any) => {
+    const movieId = movie.id?.toString();
+
+    // Prevenir duplicados
+    if (!movieId || seenIds.has(movieId)) return;
+    seenIds.add(movieId);
+
     const queryMovie: APIInterfaces.QueryMovie = {
-      id: movie.id?.toString(),
+      id: movieId,
       poster: buildPosterUrl(movie.poster_path),
       title: movie.title,
       year: movie.release_date?.split("-")[0] || "",
@@ -253,14 +397,14 @@ async function searchMovies(
 async function infoMovie(movieId: string): Promise<APIInterfaces.InfoMovie> {
   // Una sola llamada con append_to_response para optimizar
   const data = await fetchTMDB(
-    `/movie/${movieId}?language=es-ES&append_to_response=videos,credits`
+    `/movie/${movieId}?language=es-ES&append_to_response=videos,credits`,
   );
 
   // Extraer trailer de YouTube
   let trailerUrl: string | undefined;
   if (data.videos?.results) {
     const trailer = data.videos.results.find(
-      (video: any) => video.type === "Trailer" && video.site === "YouTube"
+      (video: any) => video.type === "Trailer" && video.site === "YouTube",
     );
     trailerUrl = buildTrailerUrl(trailer?.key);
   }
@@ -269,7 +413,7 @@ async function infoMovie(movieId: string): Promise<APIInterfaces.InfoMovie> {
   let director = "";
   if (data.credits?.crew) {
     const directorData = data.credits.crew.find(
-      (person: any) => person.job === "Director"
+      (person: any) => person.job === "Director",
     );
     director = directorData?.name || "";
   }
@@ -326,23 +470,38 @@ async function infoMovie(movieId: string): Promise<APIInterfaces.InfoMovie> {
  * @returns Promise con array de películas o info de película individual
  */
 export default async function api(
-  type: "top" | "search" | "info" | "discover" | "recommendations" | "similar",
-  query?: string | { with_genres: string; sort_by?: string; language?: string }
+  type:
+    | "top"
+    | "search"
+    | "info"
+    | "discover"
+    | "recommendations"
+    | "similar"
+    | "top-rated"
+    | "now-playing"
+    | "upcoming",
+  query?:
+    | string
+    | {
+        with_genres: string;
+        sort_by?: string;
+        language?: string;
+        page?: number;
+      },
+  page?: number,
 ): Promise<
-  | APIInterfaces.Movie[]
-  | APIInterfaces.QueryMovie[]
-  | APIInterfaces.InfoMovie
+  APIInterfaces.Movie[] | APIInterfaces.QueryMovie[] | APIInterfaces.InfoMovie
 > {
   try {
     switch (type) {
       case "top":
-        return await topMovies();
+        return await topMovies(page || 1);
 
       case "search":
         if (!query || typeof query !== "string") {
           throw new Error("Search query is required for 'search' type.");
         }
-        return await searchMovies(query);
+        return await searchMovies(query, page || 1);
 
       case "info":
         if (!query || typeof query !== "string") {
@@ -352,7 +511,9 @@ export default async function api(
 
       case "discover":
         if (!query || typeof query === "string") {
-          throw new Error("Discover params object is required for 'discover' type.");
+          throw new Error(
+            "Discover params object is required for 'discover' type.",
+          );
         }
         return await discoverMovies(query);
 
@@ -368,9 +529,24 @@ export default async function api(
         }
         return await similarMovies(query);
 
+      case "top-rated": {
+        const topRatedPage = typeof query === "number" ? query : page || 1;
+        return await topRated(topRatedPage);
+      }
+
+      case "now-playing": {
+        const nowPlayingPage = typeof query === "number" ? query : page || 1;
+        return await nowPlaying(nowPlayingPage);
+      }
+
+      case "upcoming": {
+        const upcomingPage = typeof query === "number" ? query : page || 1;
+        return await upcoming(upcomingPage);
+      }
+
       default:
         throw new Error(
-          "Invalid type provided. Use 'top', 'search', 'info', 'discover', 'recommendations', or 'similar'."
+          `Invalid type provided. Use 'top', 'search', 'info', 'discover', 'recommendations', 'similar', 'top-rated', 'now-playing', or 'upcoming'.`,
         );
     }
   } catch (error) {

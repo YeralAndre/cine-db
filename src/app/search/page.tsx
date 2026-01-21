@@ -1,14 +1,19 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { Frown, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import * as APIInterfaces from "@/types/movies";
 import placeholder from "@/assets/placeholder.png";
 import fetchAPI from "@/lib/fetchAPI";
 import Image from "next/image";
-import Loading from "@/components/Loading";
+import { toast } from "sonner";
+import MoviesCardSkeleton from "@/components/skeletons/MoviesCard";
 
 export default function SearchPage() {
+  useEffect(() => {
+    document.title = "Buscar Películas | CineDB";
+  }, []);
+
   const [inputValue, setInputValue] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isSearching, setIsSearching] = useState<boolean>(false);
@@ -18,32 +23,32 @@ export default function SearchPage() {
 
   const search = async (query: string) => {
     if (!query.trim()) {
-      alert("Por favor, ingresa una película para buscar.");
+      toast.warning("Por favor, ingresa una película para buscar.");
       return;
     }
-    console.log(`Buscando películas para: ${query}`);
     fetchAPI("search", query)
       .then(
         (
           response:
             | APIInterfaces.Movie[]
             | APIInterfaces.QueryMovie[]
-            | APIInterfaces.InfoMovie
+            | APIInterfaces.InfoMovie,
         ) => {
-          console.log("Respuesta de la API:", response);
           if (Array.isArray(response) && response.length > 0) {
-            console.log("Películas encontradas:", response);
             setSearchResults(response as APIInterfaces.QueryMovie[]);
           } else {
-            alert("No se encontraron películas para tu búsqueda.");
+            throw new Error("No se encontraron películas para tu búsqueda.", {
+              cause: "Search",
+            });
           }
-        }
+        },
       )
-      .catch((error) => {
-        console.error("Error al buscar películas:", error);
-        alert(
-          "Ocurrió un error al buscar películas. Por favor, inténtalo de nuevo."
-        );
+      .catch((error: Error) => {
+        if (error.cause == "Search") {
+          toast.error(error.message);
+        } else {
+          toast.error("Error al buscar películas. Inténtalo nuevamente.");
+        }
       })
       .finally(() => {
         setIsSearching(false);
@@ -56,7 +61,9 @@ export default function SearchPage() {
         <Search className="w-16 h-16 text-gray-400 mt-8 animate-pulse" />
         <p className="text-gray-400 text-lg font-light text-center max-w-2xl mt-8">
           Ingrese una película para comenzar la búsqueda. <br />
-          Por ejemplo: &quot;Inception&quot;, &quot;The Matrix&quot;, etc.
+          Por ejemplo:{" "}
+          <span className="text-amber-400">&quot;Inception&quot;</span>,{" "}
+          <span className="text-amber-400">&quot;The Matrix&quot;</span>, etc.
         </p>
       </>
     );
@@ -65,10 +72,23 @@ export default function SearchPage() {
   const AfterSearch = () => {
     return (
       <div className="flex flex-col items-center justify-center w-full max-w-6xl">
-        <p className="text-gray-400 text-lg font-light text-center max-w-2xl my-8">
-          Mostrando resultados para:{" "}
-          <span className="text-amber-400">{searchQuery}</span>
-        </p>{" "}
+        {searchResults.length > 0 ? (
+          <p className="text-gray-400 text-lg font-light text-center max-w-2xl my-8">
+            Mostrando resultados para:{" "}
+            <span className="text-amber-400">{searchQuery}</span>
+          </p>
+        ) : (
+          <div className="text-gray-400 text-lg font-light text-center max-w-2xl my-8 flex flex-col items-center justify-center">
+            <Frown className="w-16 h-16 text-gray-400 my-8" />
+            <p>
+              No encontramos películas para{" "}
+              <span className="text-amber-400">
+                &quot;{searchQuery.slice(0, 20)}&quot;
+              </span>
+            </p>
+            ¡Intenta buscar con otro término!
+          </div>
+        )}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 w-full max-w-6xl">
           {searchResults.map((movie) => (
             <div
@@ -83,6 +103,7 @@ export default function SearchPage() {
                   alt={`${movie.title} poster`}
                   className="object-cover"
                   fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
               </div>
               <h3 className="text-sm font-semibold text-white text-center line-clamp-2">
@@ -106,17 +127,12 @@ export default function SearchPage() {
     if (inputValue.trim() !== "") {
       setIsSearching(true);
       setSearchQuery(inputValue);
+      search(inputValue);
     }
   };
 
-  useEffect(() => {
-    if (searchQuery !== "") {
-      search(searchQuery);
-    }
-  }, [searchQuery]);
-
   return (
-    <section className="flex flex-col items-center w-full h-screen gap-4 py-4 mt-24">
+    <section className="flex flex-col items-center w-full min-h-screen gap-4 py-4 mt-24">
       <div className="flex flex-col items-center w-full" id="start">
         <h1 className="text-amber-400 font-semibold text-5xl my-4">
           Buscar Películas
@@ -139,7 +155,13 @@ export default function SearchPage() {
             />
           </form>
         </div>
-        {isSearching && <Loading />}
+        {isSearching && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 w-full max-w-6xl">
+            {[...Array(12)].map((_, i) => (
+              <MoviesCardSkeleton key={i} />
+            ))}
+          </div>
+        )}
         {!isSearching && searchQuery && <AfterSearch />}
         {!isSearching && !searchQuery && <BeforeSearch />}
       </div>

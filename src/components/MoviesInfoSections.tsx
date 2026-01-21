@@ -1,8 +1,8 @@
 "use client";
 
 import { Movie } from "@/types/movies";
-import Loading from "./Loading";
 import MoviesCard from "./MoviesCard";
+import MoviesInfoSectionsSkeleton from "./skeletons/MoviesInfoSections";
 
 export default function MoviesInfoSections({
   title,
@@ -14,7 +14,7 @@ export default function MoviesInfoSections({
   title: string;
   subtitle?: string;
   data: Movie[];
-  loading: boolean;
+  loading?: boolean;
   classNameItems?: string;
 }) {
   return (
@@ -27,7 +27,7 @@ export default function MoviesInfoSections({
         }`}
       >
         {loading ? (
-          <Loading />
+          <MoviesInfoSectionsSkeleton />
         ) : (
           data?.map((x, index) => <MoviesCard key={index} {...x} />)
         )}

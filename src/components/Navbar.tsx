@@ -25,6 +25,8 @@ export default function Navbar() {
         >
           <input
             type="text"
+            id="search-input"
+            name="search"
             placeholder="Buscar película..."
             className="bg-transparent outline-none text-sm placeholder-gray-500"
             aria-label="Search"
@@ -51,7 +53,7 @@ export default function Navbar() {
       <nav className="w-full p-4">
         <div className="container mx-auto flex justify-between items-center w-full">
           <a href={"/"}>
-            <Image src={Logo} alt="logo" width={120} height={60}/>
+            <Image src={Logo} alt="logo" className="w-30 h-auto" priority/>
           </a>
           <div className="flex flex-row items-center justify-between">
             {isHomePage ? <SearchInput /> : <BackHome />}

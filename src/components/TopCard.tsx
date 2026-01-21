@@ -1,5 +1,6 @@
 import { Calendar, Star } from "lucide-react";
 import Image from "next/image";
+import placeholder from "@/assets/placeholder.png";
 
 export default function TopCard({
   id,
@@ -39,9 +40,9 @@ export default function TopCard({
         <span className="text-amber-400 font-bold text-3xl">{top}</span>
       </div>
       <Image
-        src={poster ? poster : "/placeholder.svg"}
+        src={poster ? poster : placeholder}
         alt={`${title} poster`}
-        className="object-cover rounded-l-lg"
+        className="object-cover rounded-l-lg w-24 h-36"
         width={96}
         height={144}
       />

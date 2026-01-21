@@ -7,6 +7,10 @@ Una aplicación web moderna para explorar películas populares, buscar informaci
 ## ✨ Características
 
 - **🏆 Top 20 Películas Populares**: Visualiza las películas más populares del momento según TMDB
+- **🎬 Categorías de Descubrimiento**:
+  - **Mejor Calificadas**: Top películas con mayor rating de TMDB
+  - **Ahora en Cartelera**: Películas actualmente en cines
+  - **Próximamente**: Futuros estrenos
 - **🎭 Filtros por Género**: Descubre películas por categorías (Acción, Comedia, Drama, Terror, Sci-Fi, Romance, Suspenso)
 - **🔍 Búsqueda Instantánea**: Busca películas por título con resultados en tiempo real
 - **📊 Información Detallada**: Accede a información completa incluyendo:
@@ -18,9 +22,11 @@ Una aplicación web moderna para explorar películas populares, buscar informaci
   - **Películas recomendadas** basadas en la película actual
   - **Películas similares** con carrusel horizontal
 - **📱 Diseño Responsivo**: Optimizado para dispositivos móviles, tablets y desktop
-- **🎨 Interfaz Moderna**: 
+- **🎨 Interfaz Moderna**:
   - Diseño oscuro con acentos en gradiente ámbar/dorado
   - Navbar glassmorphism con backdrop-blur
+  - Carruseles horizontales con scroll suave
+  - Skeleton loaders optimizados durante carga
   - Custom scrollbar elegante
   - Footer sticky al final
   - Efectos hover con transiciones suaves
@@ -30,6 +36,7 @@ Una aplicación web moderna para explorar películas populares, buscar informaci
 ## 🛠️ Tecnologías Utilizadas
 
 ### Frontend
+
 - **Next.js 16.1.1** - Framework de React con App Router
 - **React 19.2.3** - Biblioteca de interfaz de usuario
 - **TypeScript 5.9.3** - Tipado estático para JavaScript
@@ -37,11 +44,13 @@ Una aplicación web moderna para explorar películas populares, buscar informaci
 - **Lucide React** - Iconos modernos y accesibles
 
 ### Backend & APIs
+
 - **Next.js API Routes** - Server-side endpoints como proxy
 - **TMDB API (v3)** - The Movie Database API oficial
 - **Fetch API** - Peticiones HTTP nativas (sin librerías externas)
 
 ### Herramientas de Desarrollo
+
 - **ESLint 9** - Linting de código
 - **pnpm 10.13.1** - Gestor de paquetes rápido y eficiente
 - **Turbopack** - Bundler de nueva generación
@@ -49,6 +58,7 @@ Una aplicación web moderna para explorar películas populares, buscar informaci
 ## 🚀 Instalación y Configuración
 
 ### Prerrequisitos
+
 - **Node.js 20+** instalado ([Descargar aquí](https://nodejs.org/))
 - **pnpm** instalado globalmente:
   ```bash
@@ -139,6 +149,9 @@ cine-db/
 │   │   ├── api/               # API Routes (Server-side)
 │   │   │   └── movies/        # Endpoints de películas
 │   │   │       ├── top/       # GET /api/movies/top
+│   │   │       ├── top-rated/ # GET /api/movies/top-rated
+│   │   │       ├── now-playing/ # GET /api/movies/now-playing
+│   │   │       ├── upcoming/  # GET /api/movies/upcoming
 │   │   │       ├── search/    # GET /api/movies/search?q={query}
 │   │   │       ├── info/      # GET /api/movies/info?id={movieId}
 │   │   │       ├── discover/  # GET /api/movies/discover?with_genres={id}
@@ -157,8 +170,8 @@ cine-db/
 │   │   ├── GenreFilterCard.tsx # Chip de filtro de género
 │   │   └── Loading.tsx        # Spinner de carga
 │   ├── lib/                   # Lógica de negocio
-│   │   ├── api.ts            # ⭐ Cliente TMDB API (core) con 6 endpoints
-│   │   └── fetchAPI.ts       # Cliente de API interno
+│   │   ├── api.ts            # ⭐ Cliente TMDB API (core) con 9 endpoints
+│   │   └── fetchAPI.ts       # Cliente de API interno (9 tipos)
 │   ├── types/                 # TypeScript Interfaces
 │   │   ├── movies.d.ts       # Movie, QueryMovie, InfoMovie
 │   │   └── images.d.ts       # Tipos para importar imágenes
@@ -200,6 +213,18 @@ GET /api/movies/top
 └── Retorna: Movie[]
     └── Top 20 películas populares de TMDB
 
+GET /api/movies/top-rated
+└── Retorna: Movie[]
+    └── Películas mejor calificadas (highest rated)
+
+GET /api/movies/now-playing
+└── Retorna: Movie[]
+    └── Películas actualmente en cines
+
+GET /api/movies/upcoming
+└── Retorna: Movie[]
+    └── Próximos estrenos de películas
+
 GET /api/movies/discover?with_genres={genreId}&sort_by=popularity.desc&language=es-ES
 └── Retorna: Movie[]
     └── Películas filtradas por género
@@ -230,6 +255,15 @@ El archivo `src/lib/api.ts` consume estos endpoints de TMDB:
 GET https://api.themoviedb.org/3/movie/popular
 └── Usado por: topMovies()
 
+GET https://api.themoviedb.org/3/movie/top_rated
+└── Usado por: topRated()
+
+GET https://api.themoviedb.org/3/movie/now_playing
+└── Usado por: nowPlaying()
+
+GET https://api.themoviedb.org/3/movie/upcoming
+└── Usado por: upcoming()
+
 GET https://api.themoviedb.org/3/discover/movie?with_genres={id}
 └── Usado por: discoverMovies()
 
@@ -251,6 +285,7 @@ GET https://api.themoviedb.org/3/movie/{id}/similar
 ## 🎨 Diseño y UX
 
 ### Paleta de Colores
+
 - **Fondo Principal**: Gris oscuro (`gray-950`, `#030712`)
 - **Acento Primario**: Gradiente ámbar/dorado (`#fbbf24` → `#d97706`)
 - **Texto**: Blanco y grises (`gray-100`, `gray-300`, `gray-400`)
@@ -259,18 +294,20 @@ GET https://api.themoviedb.org/3/movie/{id}/similar
 - **Navbar**: Glassmorphism con `backdrop-blur-sm` y `bg-gray-950/80`
 
 ### Tipografía
+
 - **Fuente Principal**: Inter (Google Fonts)
 - Tamaños adaptables según viewport
 - Weights: Light (300), Regular (400), Medium (500), Semibold (600), Bold (700), ExtraBold (800)
 
 ### Efectos y Animaciones
+
 - **Gradientes Personalizados**:
   - `.text-gradient`: Texto con gradiente amber (para títulos)
   - `.bg-gradient`: Fondo con gradiente amber (para botones/badges)
-- **Custom Scrollbar**: 
+- **Custom Scrollbar**:
   - Ancho 8px, color `gray-600` con hover `gray-500`
   - Compatible con WebKit y Firefox
-- **Hover States**: 
+- **Hover States**:
   - Tarjetas con borde amber y elevación
   - Géneros con background amber translúcido
   - Transiciones suaves de 200-250ms
@@ -278,6 +315,7 @@ GET https://api.themoviedb.org/3/movie/{id}/similar
 - **Glassmorphism**: Navbar con efecto vidrio esmerilado
 
 ### Layout Responsivo
+
 - **Mobile First**: Optimizado para pantallas pequeñas
 - **Grid Adaptable**: Cambios en breakpoints md, lg, xl
 - **Footer Sticky**: Siempre al final con `flex-1` en main
@@ -288,54 +326,60 @@ GET https://api.themoviedb.org/3/movie/{id}/similar
 ## 📊 TypeScript Interfaces
 
 ### Movie (Principal)
+
 ```typescript
 interface Movie {
   id?: string;
   poster?: string;
-  top?: string;           // Posición en ranking
+  top?: string; // Posición en ranking
   title?: string;
   year?: string;
-  rating?: string;        // Calificación promedio (0-10)
-  genres?: string[];      // Array de géneros en español
-  overview?: string;      // Sinopsis
-  adult?: boolean;        // Clasificación +18
+  rating?: string; // Calificación promedio (0-10)
+  genres?: string[]; // Array de géneros en español
+  overview?: string; // Sinopsis
+  adult?: boolean; // Clasificación +18
 }
 ```
+
 **Uso**: Popular, Discover, Recommendations, Similar
 
 ### QueryMovie
+
 ```typescript
 interface QueryMovie {
   id?: string;
   poster?: string;
   title?: string;
   year?: string;
-  type?: string;          // "movie"
-  authors?: string[];     // Array de directores (opcional)
+  type?: string; // "movie"
+  authors?: string[]; // Array de directores (opcional)
 }
 ```
+
 **Uso**: Resultados de búsqueda
 
 ### InfoMovie
+
 ```typescript
 interface InfoMovie {
   id?: string;
   title?: string;
   originalTitle?: string;
   year?: string;
-  category?: string;       // Géneros separados por coma
-  duration?: string;       // Formato "2h 18min"
-  rating?: string;         // Calificación TMDB (0-10)
-  peopleRating?: string;   // Número de votos
-  poster?: string;         // URL completa de poster TMDB
-  tags?: string[];         // Array de géneros
-  synopsis?: string;       // Descripción completa
-  trailer?: string;        // YouTube video ID para embed
-  direction?: string;      // Director principal
-  writers?: string[];      // Hasta 5 guionistas
-  actors?: string[];       // Top 10 actores principales
+  category?: string; // Géneros separados por coma
+  duration?: string; // Formato "2h 18min"
+  rating?: string; // Calificación TMDB (0-10)
+  peopleRating?: string; // Número de votos
+  poster?: string; // URL completa de poster TMDB
+  tags?: string[]; // Array de géneros
+  synopsis?: string; // Descripción completa
+  trailer?: string; // YouTube video ID para embed
+  direction?: string; // Director principal
+  writers?: string[]; // Hasta 5 guionistas
+  actors?: string[]; // Top 10 actores principales
 }
 ```
+
 **Uso**: Página de detalles `/info/[id]`
 
 ---
@@ -346,7 +390,7 @@ Sistema de filtrado por género con 8 categorías principales:
 
 ```typescript
 const genres = [
-  { id: null, name: "Todos" },        // Muestra películas populares
+  { id: null, name: "Todos" }, // Muestra películas populares
   { id: 28, name: "Acción" },
   { id: 35, name: "Comedia" },
   { id: 18, name: "Drama" },
@@ -358,6 +402,7 @@ const genres = [
 ```
 
 **Mapeo completo de géneros TMDB** (disponible en `src/lib/api.ts`):
+
 - 28: Acción | 12: Aventura | 16: Animación | 35: Comedia
 - 80: Crimen | 99: Documental | 18: Drama | 10751: Familia
 - 14: Fantasía | 36: Historia | 27: Terror | 10402: Música
@@ -371,12 +416,14 @@ const genres = [
 ### Variables de Entorno
 
 Archivo `.env.local`:
+
 ```env
 # TMDB API Configuration
 TMDB_API_KEY=tu_token_bearer_aqui
 ```
 
 Archivo `.env.example` (para repositorio):
+
 ```env
 # TMDB API Configuration
 # Obtén tu API Key en: https://www.themoviedb.org/settings/api
@@ -394,21 +441,25 @@ El proyecto usa configuración estándar de Next.js 15 con Turbopack habilitado.
 ## 🐛 Troubleshooting
 
 ### Error: "TMDB_API_KEY no está configurada"
+
 - ✅ Verifica que existe el archivo `.env.local`
 - ✅ Asegúrate de usar `TMDB_API_KEY` (sin `NEXT_PUBLIC_`)
 - ✅ Reinicia el servidor de desarrollo (`pnpm dev`)
 
 ### Error: "HTTP error! status: 401"
+
 - ❌ Tu API Key es inválida o expiró
 - ✅ Verifica que copiaste el **Read Access Token (v4)** completo
 - ✅ Regenera el token en TMDB si es necesario
 
 ### No aparecen posters
+
 - ✅ Verifica tu conexión a internet
 - ✅ Chequea que TMDB esté operativo
 - ✅ Revisa la consola del navegador para errores de CORS
 
 ### Build falla en Vercel
+
 - ✅ Asegúrate de agregar `TMDB_API_KEY` en Vercel Environment Variables
 - ✅ Verifica que el repositorio tiene todos los archivos necesarios
 - ✅ Revisa los logs de build en Vercel Dashboard
@@ -417,7 +468,20 @@ El proyecto usa configuración estándar de Next.js 15 con Turbopack habilitado.
 
 ## 📝 Changelog
 
+### v2.2.0 (Enero 2026) - Categorías de Descubrimiento
+
+- ✅ **Nuevas secciones de películas**: Top Rated, Now Playing, Upcoming
+- ✅ **3 nuevos API endpoints**: `/api/movies/top-rated`, `now-playing`, `upcoming`
+- ✅ **9 funciones en api.ts**: topRated(), nowPlaying(), upcoming() agregadas
+- ✅ **Skeleton loaders optimizados**: MoviesInfoSectionsSkeleton reducido de 519 a 45 líneas (91% menos código)
+- ✅ **Carruseles horizontales**: Scroll suave con custom scrollbar en cada categoría
+- ✅ **Loading states**: Estados de carga independientes por categoría
+- ✅ **Componente MoviesInfoSections**: Para secciones reutilizables de películas
+- ✅ **Toast notifications**: Mensajes de error y info con sonner
+- ✅ **Empty states**: Mensajes personalizados para búsquedas sin resultados
+
 ### v2.1.0 (Enero 2026) - Feature Update
+
 - ✅ **Filtros por género**: Sistema de discover con 8 categorías
 - ✅ **Películas recomendadas y similares**: Endpoints y carruseles horizontales
 - ✅ **Interfaz Movie**: Renombrada de TopMovie, ahora más versátil
@@ -430,6 +494,7 @@ El proyecto usa configuración estándar de Next.js 15 con Turbopack habilitado.
 - ✅ **Mejoras de UX**: Hover effects, transiciones suaves, loading states
 
 ### v2.0.0 (Enero 2026) - Migración TMDB
+
 - ✅ Migración completa de IMDB scraping a TMDB API
 - ✅ Eliminada dependencia de Cheerio
 - ✅ Trailers de YouTube integrados
@@ -438,6 +503,7 @@ El proyecto usa configuración estándar de Next.js 15 con Turbopack habilitado.
 - ✅ Mejor rendimiento y confiabilidad
 
 ### v1.0.0 (2024) - Versión Inicial
+
 - ✅ Web scraping de IMDB
 - ✅ Top películas
 - ✅ Búsqueda básica

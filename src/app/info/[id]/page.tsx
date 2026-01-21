@@ -5,10 +5,10 @@ import type { InfoMovie, Movie } from "@/types/movies";
 import fetchAPI from "@/lib/fetchAPI";
 import placeholder from "@/assets/placeholder.svg";
 import { Calendar, Clock, SquareArrowOutUpRight, Star } from "lucide-react";
-import Loading from "@/components/Loading";
 import Image from "next/image";
-import MoviesCard from "@/components/MoviesCard";
 import MoviesInfoSections from "@/components/MoviesInfoSections";
+import { toast } from "sonner";
+import MovieDetailsSkeleton from "@/components/skeletons/MovieDetails";
 
 export default function InfoPage({
   params,
@@ -29,8 +29,13 @@ export default function InfoPage({
       try {
         const data = (await fetchAPI("info", movieId)) as InfoMovie;
         setMovie(data);
-      } catch (error) {
-        console.error("Failed to fetch movie info:", error);
+
+        document.title = `${data.title} | CineDB`;
+        document
+          .querySelector?.('meta[name="description"]')
+          ?.setAttribute("content", (data.synopsis as string) || "");
+      } catch (_error) {
+        toast.error("No se pudo cargar la información de la película.");
         setMovie(null);
       }
     }
@@ -39,8 +44,7 @@ export default function InfoPage({
       try {
         const data = (await fetchAPI("similar", movieId)) as Movie[];
         setSimilarsMovies(data);
-      } catch (e) {
-        console.log("Failed to fetch similar movies: ", e);
+      } catch (_e) {
         setSimilarsMovies(null);
       } finally {
         setLoadingSimilarMovies(false);
@@ -51,8 +55,7 @@ export default function InfoPage({
       try {
         const data = (await fetchAPI("recommendations", movieId)) as Movie[];
         setRecommendedMovies(data);
-      } catch (e) {
-        console.log("Failed to fetch recommended movies: ", e);
+      } catch (_e) {
         setRecommendedMovies(null);
       } finally {
         setLoadingRecommendedMovies(false);
@@ -63,17 +66,18 @@ export default function InfoPage({
     fetchRecommendedMovies();
   }, [movieId]);
 
-  if (!movie) return <Loading />;
+  if (!movie) return <MovieDetailsSkeleton />;
 
   return (
     <div className="p-4 mb-10 mt-25 flex flex-col items-center gap-4 w-full mx-auto">
-      <div className="flex flex-row gap-10 w-1/2 mx-auto mb-5">
+      <div className="flex flex-row gap-10 w-full max-w-5xl mx-auto mb-5">
         <Image
           src={movie.poster ? movie.poster : placeholder}
           alt={`${movie.title} poster`}
-          className="object-cover rounded-lg w-auto h-150"
-          height={400}
+          className="object-cover rounded-lg w-auto h-150 shrink-0"
+          height={600}
           width={400}
+          loading="eager"
         />
         <div className="flex flex-col gap-2">
           <h1 className="text-5xl font-semibold text-amber-400">
@@ -121,16 +125,16 @@ export default function InfoPage({
               </div>
             )}
             {movie.writers && movie.writers.length > 0 && (
-              <div className="flex items-center gap-2 text-gray-300 mb-2">
-                <span className="font-semibold text-lg text-amber-400">
+              <div className="flex flex-row items-start gap-2 w-full text-gray-300 mb-4">
+                <span className="font-semibold text-lg text-amber-400 shrink-0">
                   Guionistas:
                 </span>
                 <span className="font-medium">{movie.writers.join(", ")}</span>
               </div>
             )}
             {movie.actors && movie.actors.length > 0 && (
-              <div className="flex gap-2 text-gray-300 mb-2">
-                <span className="font-semibold text-lg text-amber-400">
+              <div className="flex flex-row w-full gap-2 text-gray-300 mb-4">
+                <span className="font-semibold text-lg text-amber-400 shrink-0">
                   Elenco:
                 </span>
                 <span className="font-medium">{movie.actors.join(", ")}</span>
@@ -149,11 +153,9 @@ export default function InfoPage({
           </div>
         </div>
       </div>
-      {movie.trailer && (
-        <div className="w-full max-w-5xl">
-          <h2 className="text-3xl font-semibold text-amber-400 mb-4">
-            Trailer
-          </h2>
+      <div className="w-full max-w-5xl">
+        <h2 className="text-3xl font-semibold text-amber-400 mb-4">Trailer</h2>
+        {movie.trailer ? (
           <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
             <iframe
               src={movie.trailer}
@@ -162,20 +164,30 @@ export default function InfoPage({
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             ></iframe>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="flex flex-row items-center justify-center">
+            <p className="text-gray-400 text-lg font-light text-center max-w-2xl my-8">
+              No encontramos un trailer para esta película.
+            </p>
+          </div>
+        )}
+      </div>
       <div className="bg-gray-700 h-[0.5px] w-3/5 my-8" />
-      <MoviesInfoSections
-        title="¿Te gustó la película?"
-        subtitle="Prueba con estas entregas:"
-        data={similarMovies as Movie[]}
-        loading={loadingSimilarMovies}
-      />
-      <MoviesInfoSections
-        title="También te pueden interesar"
-        data={recommendedMovies as Movie[]}
-        loading={loadingRecommendedMovies}
-      />
+      {similarMovies && similarMovies.length > 0 && (
+        <MoviesInfoSections
+          title="¿Te gustó la película?"
+          subtitle="Prueba con estas entregas:"
+          data={similarMovies as Movie[]}
+          loading={loadingSimilarMovies}
+        />
+      )}
+      {recommendedMovies && recommendedMovies.length > 0 && (
+        <MoviesInfoSections
+          title="También te pueden interesar"
+          data={recommendedMovies as Movie[]}
+          loading={loadingRecommendedMovies}
+        />
+      )}
     </div>
   );
 }

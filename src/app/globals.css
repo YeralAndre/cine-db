@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+* {
+  min-width: 0;
+}
+
 @layer utilities {
   .text-gradient,
   .group:hover .group-hover\:text-gradient {

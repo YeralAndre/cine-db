@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -26,10 +27,9 @@ export default function RootLayout({
         className={`${InterFont.variable} bg-gray-950 text-gray-100 flex flex-col min-h-screen`}
       >
         <Navbar />
-        <main className="flex-1">
-          {children}
-        </main>
+        <main className="flex-1">{children}</main>
         <Footer />
+        <Toaster position="bottom-right" richColors closeButton theme="dark" />
       </body>
     </html>
   );
