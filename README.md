@@ -2,9 +2,8 @@
 
 <div align="center">
   <img src="public/favicon.ico" width="64" height="64" alt="Favicon" />
-  <br />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <img src="src/assets/logo.png" height="64" alt="Logo" />
-  <br />
 </div>
 
 #
